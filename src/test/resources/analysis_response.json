@@ -1,0 +1,99 @@
+{
+  "summary": {
+    "token": "MjAyNTAyMTAxMzMyMjFfOTk%3D",
+    "projection": true,
+    "interactors": false,
+    "type": "OVERREPRESENTATION",
+    "sampleName": "Gene names from liver",
+    "text": true,
+    "includeDisease": true
+  },
+  "expression": {
+    "columnNames": []
+  },
+  "identifiersNotFound": 48,
+  "pathwaysFound": 1009,
+  "pathways": [
+    {
+      "stId": "R-HSA-1226099",
+      "dbId": 1226099,
+      "name": "Signaling by FGFR in disease",
+      "species": {
+        "dbId": 48887,
+        "taxId": "9606",
+        "name": "Homo sapiens"
+      },
+      "llp": false,
+      "entities": {
+        "resource": "TOTAL",
+        "total": 82,
+        "found": 10,
+        "ratio": 0.005199746353836398,
+        "pValue": 0.0000030868982799914235,
+        "fdr": 0.0027377239124082298,
+        "exp": []
+      },
+      "reactions": {
+        "resource": "TOTAL",
+        "total": 99,
+        "found": 47,
+        "ratio": 0.0064871240416748575
+      },
+      "inDisease": true
+    },
+    {
+      "stId": "R-HSA-9006934",
+      "dbId": 9006934,
+      "name": "Signaling by Receptor Tyrosine Kinases",
+      "species": {
+        "dbId": 48887,
+        "taxId": "9606",
+        "name": "Homo sapiens"
+      },
+      "llp": false,
+      "entities": {
+        "resource": "TOTAL",
+        "total": 634,
+        "found": 29,
+        "ratio": 0.04020291693088142,
+        "pValue": 0.000004932835878213027,
+        "fdr": 0.0027377239124082298,
+        "exp": []
+      },
+      "reactions": {
+        "resource": "TOTAL",
+        "total": 759,
+        "found": 180,
+        "ratio": 0.049734617652840575
+      },
+      "inDisease": false
+    }
+  ],
+  "resourceSummary": [
+    {
+      "resource": "TOTAL",
+      "pathways": 1009,
+      "filtered": 1009
+    },
+    {
+      "resource": "UNIPROT",
+      "pathways": 1007,
+      "filtered": 1007
+    },
+    {
+      "resource": "ENSEMBL",
+      "pathways": 63,
+      "filtered": 63
+    }
+  ],
+  "speciesSummary": [
+    {
+      "dbId": 48887,
+      "taxId": "9606",
+      "name": "Homo sapiens",
+      "pathways": 1009,
+      "filtered": 1009
+    }
+  ],
+  "warnings": []
+}
