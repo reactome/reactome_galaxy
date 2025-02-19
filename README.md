@@ -7,8 +7,7 @@ To get started:
 
 ```bash
 $ mvn package
-$ java -jar target/reactome-cli-local-SNAPSHOT-jar-with-dependencies.jar --reactome_url http://reactome.org \
+$ java -jar target/reactome-cli-local-SNAPSHOT-jar-with-dependencies.jar \
+    --reactome_url http://reactome.org \
     --protein_file_path src/test/resources/uniprot.txt
 ```
-
-
