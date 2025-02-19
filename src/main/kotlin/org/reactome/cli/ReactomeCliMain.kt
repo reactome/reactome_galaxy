@@ -1,10 +1,10 @@
 package org.reactome.cli
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import java.util.concurrent.Callable
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
 import mu.KotlinLogging
 import picocli.CommandLine
+import java.util.concurrent.Callable
 
 class ReactomeCliMain : Callable<Int> {
 
@@ -19,7 +19,7 @@ class ReactomeCliMain : Callable<Int> {
     override fun call(): Int {
         logger.info { "Starting reactome CLI" }
         try {
-            ReactomeCli(HttpClient(CIO), reactomeUrl, proteinFilePath).execute()
+            println(ReactomeCli(HttpClient(CIO), reactomeUrl, proteinFilePath).execute())
         } catch (e: Exception) {
             logger.error("Could not complete CLI execution", e)
         }
