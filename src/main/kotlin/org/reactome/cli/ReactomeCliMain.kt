@@ -4,6 +4,9 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import mu.KotlinLogging
 import picocli.CommandLine
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.concurrent.Callable
 
 class ReactomeCliMain : Callable<Int> {
@@ -14,16 +17,27 @@ class ReactomeCliMain : Callable<Int> {
     @CommandLine.Option(names = ["--protein_file_path"])
     lateinit var proteinFilePath: String
 
+    @CommandLine.Option(
+        names = ["-o", "--output"],
+        description = ["Path to the output file (optional)"],
+        required = false
+    )
+    var outputFilePath: Path? = null
+
     private val logger = KotlinLogging.logger {}
 
     override fun call(): Int {
         logger.info { "Starting reactome CLI" }
-        try {
-            println(ReactomeCli(HttpClient(CIO), reactomeUrl, proteinFilePath).execute())
+        return try {
+            val result = ReactomeCli(HttpClient(CIO), reactomeUrl, proteinFilePath).execute()
+            outputFilePath?.let {
+                Files.writeString(it, result, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+            } ?: println(result)
+            0
         } catch (e: Exception) {
             logger.error("Could not complete CLI execution", e)
+            1
         }
-        return 0
     }
 }
 
