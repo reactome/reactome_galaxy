@@ -20,7 +20,7 @@ Start the container (this may take a while):
 ```bash
 docker run -d \
   -v galaxy_storage/:/export/ \
-  -v /home/kz/oicr/local_tools/:/local_tools \
+  -v local_tools/:/local_tools \
   --privileged=true \
   -p 8080:80 -p 8081:21 -p 8022:22 \
   -e GALAXY_CONFIG_TOOL_CONFIG_FILE=/etc/galaxy/tool_conf.xml,/local_tools/local_tools.xml \
