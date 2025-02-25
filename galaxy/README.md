@@ -1,6 +1,7 @@
 # Galaxy Development Configuration
 
-Using docker to run a local instance of Galaxy with the Reactome plugin.
+Use docker to run a local instance of Galaxy with the Reactome plugin for
+dev/testing as follows:
 
 Create an empty galaxy storage folder (this will be preserved and reused):
 
@@ -8,7 +9,7 @@ Create an empty galaxy storage folder (this will be preserved and reused):
 $ mdkir galaxy_storage
 ```
 
-Build and copy the galaxy jar to the local tools folder:
+Build and copy the galaxy jar to the `local_tools` folder:
 
 ```bash
 $ mvn package
@@ -31,3 +32,6 @@ docker run -d \
 Follow logs with `docker logs -f galaxy`
 
 Once ready, navigate to `http://localhost:8080` for the Galaxy UI, the plugin should be available in the tool panel.
+
+Note this assumes that java available in the galaxy container image, via the path in the `command` field
+of `local_tools/reactome/reactome.xml`, adjust as needed.
