@@ -153,6 +153,7 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <finalName>reactome</finalName>
                 </configuration>
                 <executions>
                     <execution>
@@ -164,7 +165,100 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-jar-to-tools</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy file="${project.build.directory}/reactome-jar-with-dependencies.jar"
+                                      tofile="${basedir}/galaxy/local_tools/reactome/reactome.jar"/>
+                            </target>
+                        </configuration>
+                    </execution>
 
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+
+                    <execution>
+                        <id>create-venv</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>virtualenv</executable>
+                            <arguments>
+                                <argument>.venv</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- 2) Install Planemo (and any other Python dependencies) inside the venv -->
+                    <execution>
+                        <id>install-planemo</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>.venv/bin/pip</executable>
+                            <arguments>
+                                <argument>install</argument>
+                                <argument>--upgrade</argument>
+                                <argument>pip</argument>
+                                <argument>setuptools</argument>
+                                <argument>wheel</argument>
+                                <argument>planemo</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>planemo-lint</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>.venv/bin/planemo</executable>
+                            <arguments>
+                                <argument>lint</argument>
+                                <argument>galaxy/local_tools/reactome</argument>
+                                <argument>--fail_level</argument>
+                                <argument>error</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>planemo-test</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>.venv/bin/planemo</executable>
+                            <arguments>
+                                <argument>test</argument>
+                                <argument>galaxy/local_tools/reactome</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

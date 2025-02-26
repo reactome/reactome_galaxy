@@ -9,5 +9,5 @@ To get started:
 $ mvn package
 $ java -jar target/reactome-cli-local-SNAPSHOT-jar-with-dependencies.jar \
     --reactome_url http://reactome.org \
-    --protein_file_path src/test/resources/uniprot.txt
+    --protein_file_path src/test/resources/proteins.txt
 ```
