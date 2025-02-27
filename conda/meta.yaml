@@ -11,9 +11,9 @@ build:
 
 requirements:
   host:
-    - openjdk
+    - openjdk>=8
   run:
-    - openjdk
+    - openjdk>=8
 
 test:
   commands:
