@@ -24,6 +24,13 @@ class ReactomeCliMain : Callable<Int> {
     )
     var outputFilePath: Path? = null
 
+    @CommandLine.Option(
+        names = ["-h", "--help"],
+        usageHelp = true,
+        description = ["Display this help message"]
+    )
+    var helpRequested: Boolean = false
+
     private val logger = KotlinLogging.logger {}
 
     override fun call(): Int {
