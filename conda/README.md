@@ -30,9 +30,9 @@ $ conda install -y conda-build
 $ conda index /workdir/conda-bld
 
 # create a test env and install the package
-$ conda create -n testenv
+$ conda create -n testenv -y
 $ conda activate testenv
-$ conda install -c file:///workdir/conda-bld/ reactome-cli
+$ conda install -c file:///workdir/conda-bld/ reactome-cli -y
 
 # test the package
 $ reactome --help
