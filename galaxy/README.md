@@ -6,7 +6,7 @@ dev/testing as follows:
 Create an empty galaxy storage folder (this will be preserved and reused):
 
 ```bash
-$ mdkir galaxy_storage
+$ mkdir galaxy_storage
 ```
 
 Build and copy the galaxy jar to the `local_tools` folder:

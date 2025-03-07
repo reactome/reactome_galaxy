@@ -21,4 +21,8 @@
         Perform a Reactome analysis on a list of proteins
     </help>
 
+    <citations>
+        <citation type="doi">0.1093/nar/gkad1025</citation>
+    </citations>
+
 </tool>
