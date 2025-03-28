@@ -1,6 +1,6 @@
 <tool id="reactome" name="Reactome Analysis" version="0.1.0">
     <description>Perform a Reactome analysis</description>
-    <command>/export/tool_deps/_conda/pkgs/openjdk-23.0.2-h68779a4_0/bin/java -jar '${__tool_directory__}/reactome.jar'
+    <command>java -jar '${__tool_directory__}/reactome.jar'
         --reactome_url 'http://reactome.org' --protein_file_path '$input' --output '$output'
     </command>
     <inputs>
@@ -13,12 +13,16 @@
     <tests>
         <test>
             <param name="input" value="proteins.txt"/>
-            <output name="out_file1" file="analysis_results.csv"/>
+            <output name="output" file="analysis_results.csv"/>
         </test>
     </tests>
 
     <help>
         Perform a Reactome analysis on a list of proteins
     </help>
+
+    <citations>
+        <citation type="doi">0.1093/nar/gkad1025</citation>
+    </citations>
 
 </tool>

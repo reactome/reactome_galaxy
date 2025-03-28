@@ -1,0 +1,26 @@
+package:
+  name: reactome-cli
+  version: "0.1.0"
+
+source:
+  path: ../target/reactome-cli-local-SNAPSHOT-jar-with-dependencies.jar
+
+build:
+  noarch: generic
+  number: 0
+
+requirements:
+  host:
+    - openjdk>=8
+  run:
+    - openjdk>=8
+
+test:
+  commands:
+    - java -jar $PREFIX/lib/reactome/reactome.jar --help
+
+about:
+  home: https://github.com/reactome/reactome_galaxy
+  license: Apache-2.0
+  summary: "Reactome command-line tool"
+
