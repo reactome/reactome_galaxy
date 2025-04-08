@@ -95,6 +95,24 @@
             <version>${ktor-client.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.squareup.moshi</groupId>
+            <artifactId>moshi-kotlin</artifactId>
+            <version>1.15.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.moshi</groupId>
+            <artifactId>moshi-adapters</artifactId>
+            <version>1.15.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.12.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -182,7 +200,26 @@
                             </target>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
 
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>add-generated-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>target/generated-sources/openapi-client/src/main/kotlin</source>
+                            </sources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
