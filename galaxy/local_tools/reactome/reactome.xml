@@ -1,19 +1,33 @@
 <tool id="reactome" name="Reactome Analysis" version="0.1.0">
     <description>Perform a Reactome analysis</description>
 
-    <command>java -jar '${__tool_directory__}/reactome.jar'
-        --reactome_url 'https://release.reactome.org'
-        --identifiers_file '$input'
-        --output '$output'
-        --pathways '$pathways'
-        --entities_found '$entities_found'
-        --entities_not_found '$entities_not_found'
-        --result_json '$result_json'
-        --report_pdf '$report_pdf'
-    </command>
+    <command><![CDATA[
+#set $input_final = ''
+
+#if $input_condition.input_source == "text":
+  printf '%s' '$input_condition.input_text' | sed 's/__cn__/\n/g' > identifiers_file.txt;
+  #set $input_final = 'identifiers_file.txt'
+#else:
+  #set $input_final = $input_condition.input_file
+#end if
+
+java -jar '${__tool_directory__}/reactome.jar' --reactome_url 'https://release.reactome.org' --identifiers_file "$input_final" --output '$output' --pathways '$pathways' --entities_found '$entities_found' --entities_not_found '$entities_not_found' --result_json '$result_json' --report_pdf '$report_pdf'
+]]></command>
 
     <inputs>
-        <param format="txt" name="input" type="data" label="Source file"/>
+        <conditional name="input_condition" label="Identifiers Input">
+            <param name="input_source" type="select" label="Choose input type" help="Upload a file or paste its content">
+                <option value="file" selected="true">Upload File</option>
+                <option value="text">Paste Text</option>
+            </param>
+            <when value="file">
+                <param name="input_file" type="data" format="txt" label="Source File"/>
+            </when>
+            <when value="text">
+                <param name="input_text" type="text" area="true" label="Paste Identifiers Here"/>
+            </when>
+        </conditional>
+
         <param name="include_interactors" type="boolean" label="Include Interactors?"
                help="IntAct interactors are used to increase the analysis background"
                checked="false"/>
@@ -30,11 +44,12 @@
 
     <tests>
         <test>
-            <param name="input" value="proteins.txt"/>
+            <param name="input_condition|input_source" value="file"/>
+            <param name="input_condition|input_file" value="proteins.txt"/>
             <output name="output" file="analysis_results.csv"/>
         </test>
     </tests>
-
+    
     <help>
         Perform a Reactome analysis on a list of proteins
     </help>
