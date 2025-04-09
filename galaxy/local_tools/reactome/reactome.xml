@@ -1,13 +1,31 @@
 <tool id="reactome" name="Reactome Analysis" version="0.1.0">
     <description>Perform a Reactome analysis</description>
+
     <command>java -jar '${__tool_directory__}/reactome.jar'
-        --reactome_url 'http://reactome.org' --protein_file_path '$input' --output '$output'
+        --reactome_url 'https://release.reactome.org'
+        --identifiers_file '$input'
+        --output '$output'
+        --pathways '$pathways'
+        --entities_found '$entities_found'
+        --entities_not_found '$entities_not_found'
+        --result_json '$result_json'
+        --report_pdf '$report_pdf'
     </command>
+
     <inputs>
         <param format="txt" name="input" type="data" label="Source file"/>
+        <param name="include_interactors" type="boolean" label="Include Interactors?"
+               help="IntAct interactors are used to increase the analysis background"
+               checked="false"/>
     </inputs>
+
     <outputs>
-        <data format="csv" name="output"/>
+        <data format="csv" name="output" label="Analysis Results"/>
+        <data format="csv" name="pathways" label="Pathways"/>
+        <data format="csv" name="entities_found" label="Entities Found"/>
+        <data format="csv" name="entities_not_found" label="Entities Not Found"/>
+        <data format="json" name="result_json" label="Json result"/>
+        <data format="pdf" name="report_pdf" label="PDF report"/>
     </outputs>
 
     <tests>

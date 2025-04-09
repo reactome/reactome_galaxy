@@ -11,12 +11,13 @@ private const val REACTOME_TEST_URL = "http://example.com"
 private val UNITPROT_INPUT_FILE = "${System.getProperty("user.dir")}/src/test/resources/uniprot.txt"
 private val JSON_RESPONSE_FILE = "${System.getProperty("user.dir")}/src/test/resources/analysis_response.json"
 private val JSON_RESPONSE = java.io.File(JSON_RESPONSE_FILE).readText(Charsets.UTF_8)
+private const val TOKEN = "MjAyNTAyMTAxMzMyMjFfOTk%3D"
 
 class ReactomeCliTest {
 
     @Test
     fun `Should return CSV for protein analysis`() {
-        val cli = ReactomeCli(testHttpClient(JSON_RESPONSE), REACTOME_TEST_URL, UNITPROT_INPUT_FILE)
+        val cli = ReactomeCli(testHttpClient(JSON_RESPONSE), REACTOME_TEST_URL, UNITPROT_INPUT_FILE, includeInteractors = true)
         val csvBody = cli.execute()
 
         val expectedCsvBody = """
@@ -30,7 +31,7 @@ class ReactomeCliTest {
 
     @Test
     fun `Should throw exception on http error`() {
-        val cli = ReactomeCli(testHttpClient(JSON_RESPONSE), "WRONG_URL", UNITPROT_INPUT_FILE)
+        val cli = ReactomeCli(testHttpClient(JSON_RESPONSE), "WRONG_URL", UNITPROT_INPUT_FILE, includeInteractors = true)
         assertThatThrownBy { cli.execute() }
             .isInstanceOf(Exception::class.java)
             .hasMessage("Failed to submit gene list: 404 - Not Found")
@@ -43,6 +44,31 @@ class ReactomeCliTest {
                     content = data,
                     status = HttpStatusCode.OK,
                     headers = headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))
+                )
+            } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/download/${TOKEN}/result.json")) {
+                respond(
+                    content = "abcdef",
+                    status = HttpStatusCode.OK,
+                )
+            } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/download/${TOKEN}/entities/found/TOTAL/entities_found.csv")) {
+                respond(
+                    content = "abcdef",
+                    status = HttpStatusCode.OK,
+                )
+            } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/download/${TOKEN}/entities/notfound/entities_not_found.csv")) {
+                respond(
+                    content = "abcdef",
+                    status = HttpStatusCode.OK,
+                )
+            } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/download/${TOKEN}/pathways/TOTAL/pathways.csv")) {
+                respond(
+                    content = "abcdef",
+                    status = HttpStatusCode.OK,
+                )
+            } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/report/${TOKEN}/Homo%20sapiens/report.pdf")) {
+                respond(
+                    content = "abcdef",
+                    status = HttpStatusCode.OK,
                 )
             } else {
                 respondError(HttpStatusCode.NotFound)
