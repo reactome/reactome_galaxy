@@ -89,6 +89,12 @@ class ReactomeCliMain : Callable<Int> {
     )
     var reportPdfFile: Path? = null
 
+    @CommandLine.Option(
+        names = ["--html_report"],
+        description = ["HTML report output file (optional)"],
+        required = false
+    )
+    var htmlReportFile: Path? = null
 
     @CommandLine.Option(
         names = ["-v", "--verbose"],
@@ -109,7 +115,7 @@ class ReactomeCliMain : Callable<Int> {
         logger.info { "Starting reactome CLI" }
         return try {
             val result = ReactomeCli(httpClient(), reactomeUrl, identifiersFilePath, includeInteractors, pathwaysFile,
-                entitiesFoundFile, entitiesNotFoundFile, resultJsonFile, reportPdfFile).execute()
+                entitiesFoundFile, entitiesNotFoundFile, resultJsonFile, reportPdfFile, htmlReportFile).execute()
             outputFile?.let {
                 Files.writeString(it, result, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
             } ?: println(result)

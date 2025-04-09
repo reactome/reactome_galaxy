@@ -11,7 +11,16 @@
   #set $input_final = $input_condition.input_file
 #end if
 
-java -jar '${__tool_directory__}/reactome.jar' --reactome_url 'https://release.reactome.org' --identifiers_file "$input_final" --output '$output' --pathways '$pathways' --entities_found '$entities_found' --entities_not_found '$entities_not_found' --result_json '$result_json' --report_pdf '$report_pdf'
+java -jar '${__tool_directory__}/reactome.jar'
+  --reactome_url 'https://release.reactome.org'
+  --identifiers_file "$input_final"
+  --output '$output'
+  --pathways '$pathways'
+  --entities_found '$entities_found'
+  --entities_not_found '$entities_not_found'
+  --result_json '$result_json'
+  --report_pdf '$report_pdf'
+  --html_report '$report_html'
 ]]></command>
 
     <inputs>
@@ -40,8 +49,9 @@ java -jar '${__tool_directory__}/reactome.jar' --reactome_url 'https://release.r
         <data format="csv" name="entities_not_found" label="Entities Not Found"/>
         <data format="json" name="result_json" label="Json result"/>
         <data format="pdf" name="report_pdf" label="PDF report"/>
+        <data format="html" name="report_html" label="Reactome Pathway Links"/>
     </outputs>
-
+    
     <tests>
         <test>
             <param name="input_condition|input_source" value="file"/>
@@ -49,7 +59,7 @@ java -jar '${__tool_directory__}/reactome.jar' --reactome_url 'https://release.r
             <output name="output" file="analysis_results.csv"/>
         </test>
     </tests>
-    
+
     <help>
         Perform a Reactome analysis on a list of proteins
     </help>
