@@ -175,11 +175,13 @@ class ReactomeCli(
             val entitiesPValueStr = String.format(Locale.US, "%.2E", pathway.entities.pValue)
             val entitiesFdrStr = String.format(Locale.US, "%.12f", pathway.entities.fdr)
             val reactionsRatioStr = String.format(Locale.US, "%.12f", pathway.reactions.ratio)
-            val imageUrl = "${contentUrl()}/exporter/diagram/${pathway.stId}.png?diagramProfile=Modern&token=$token&analysisProfile=Standard&quality=5"
+            val imageUrl = "${contentUrl()}/exporter/diagram/${pathway.stId}.png?diagramProfile=Modern&token=$token&analysisProfile=Standard"
+            val smallImageUrl = "${imageUrl}&quality=5"
+            val largeImageUrl = "${imageUrl}&quality=10"
 
             htmlContent.append("<tr>")
             htmlContent.append("<td><a href=\"${pathwayBrowserUrl()}/#/${pathway.stId}&DTAB=AN&ANALYSIS=${token}\" target=\"_blank\">${pathway.name}</a></td>")
-            htmlContent.append("<td><img src=\"$imageUrl\" alt=\"Pathway Diagram\" style=\"max-width: 100px; max-height: 100px;\"></td>")
+            htmlContent.append("<td><a href=\"$largeImageUrl\" target=\"_blank\"><img src=\"$smallImageUrl\" alt=\"Pathway Diagram\" style=\"max-width: 100px; max-height: 100px;\"></a></td>")
             htmlContent.append("<td>${pathway.entities.found}</td>")
             htmlContent.append("<td>${pathway.entities.total}</td>")
             htmlContent.append("<td>${entitiesRatioStr}</td>")
@@ -211,6 +213,14 @@ class ReactomeCli(
 
     private fun pathwayBrowserUrl(): String {
         return "$reactomeUrl/PathwayBrowser"
+    }
+
+    private fun pathwayBrowserLink(pathwayId: String, token: String): String {
+        return "$reactomeUrl/PathwayBrowser/#/${pathwayId}&DTAB=AN&ANALYSIS=${token}"
+    }
+
+    private fun pathwayDiagramUrl(pathwayId: String, token: String): String {
+        return "${contentUrl()}/exporter/diagram/${pathwayId}.png?diagramProfile=Modern&token=$token&analysisProfile=Standard"
     }
 
     private fun pagedUrl(url: String, pageSize: Int, page: Int): String {
