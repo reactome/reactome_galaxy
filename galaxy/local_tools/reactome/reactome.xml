@@ -51,7 +51,7 @@ java -jar '${__tool_directory__}/reactome.jar'
         <data format="pdf" name="report_pdf" label="PDF report"/>
         <data format="html" name="report_html" label="Reactome Pathway Links"/>
     </outputs>
-    
+
     <tests>
         <test>
             <param name="input_condition|input_source" value="file"/>
@@ -60,9 +60,28 @@ java -jar '${__tool_directory__}/reactome.jar'
         </test>
     </tests>
 
-    <help>
-        Perform a Reactome analysis on a list of proteins
-    </help>
+    <help><![CDATA[
+        `Reactome <https://reactome.org>`_ is a curated database of pathways and reactions in human biology.
+
+        This tool will perform an analysis on a list of gene/proteins provided as identifiers, one per line:
+
+        .. code-block:: text
+
+            #GBM Uniprot
+            P01023
+            Q99758
+            O15439
+            O43184
+            Q13444
+            P82987
+
+        Running the analysis will produce a list of pathways and a PDF report, along with other analysis details.
+
+        .. class:: warningmark
+
+        For more, see the `Reactome User Guide <https://reactome.org/userguide>`_
+
+    ]]></help>
 
     <citations>
         <citation type="doi">0.1093/nar/gkad1025</citation>
