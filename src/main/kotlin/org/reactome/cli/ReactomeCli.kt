@@ -178,7 +178,7 @@ class ReactomeCli(
             val imageUrl = "${contentUrl()}/exporter/diagram/${pathway.stId}.png?diagramProfile=Modern&token=$token&analysisProfile=Standard&quality=5"
 
             htmlContent.append("<tr>")
-            htmlContent.append("<td><a href=\"${pathwayBrowserUrl()}/#/${pathway.stId}\" target=\"_blank\">${pathway.name}</a></td>")
+            htmlContent.append("<td><a href=\"${pathwayBrowserUrl()}/#/${pathway.stId}&DTAB=AN&ANALYSIS=${token}\" target=\"_blank\">${pathway.name}</a></td>")
             htmlContent.append("<td><img src=\"$imageUrl\" alt=\"Pathway Diagram\" style=\"max-width: 100px; max-height: 100px;\"></td>")
             htmlContent.append("<td>${pathway.entities.found}</td>")
             htmlContent.append("<td>${pathway.entities.total}</td>")
