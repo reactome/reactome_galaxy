@@ -1,7 +1,12 @@
 <tool id="reactome" name="Reactome Analysis" version="0.1.0">
     <description>Perform a Reactome analysis</description>
-    <command>java -jar '${__tool_directory__}/reactome.jar'
-        --reactome_url 'http://reactome.org' --protein_file_path '$input' --output '$output'
+
+    <requirements>
+        <requirement type="package">reactome-cli</requirement>
+    </requirements>
+
+    <command>
+        reactome --reactome_url 'http://reactome.org' --protein_file_path '$input' --output '$output'
     </command>
     <inputs>
         <param format="txt" name="input" type="data" label="Source file"/>

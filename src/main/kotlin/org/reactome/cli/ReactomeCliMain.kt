@@ -1,14 +1,16 @@
 package org.reactome.cli
 
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import mu.KotlinLogging
-import picocli.CommandLine
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.Callable
+import mu.KotlinLogging
+import picocli.CommandLine
+import picocli.CommandLine.Command
 
+@Command(mixinStandardHelpOptions = true)
 class ReactomeCliMain : Callable<Int> {
 
     @CommandLine.Option(names = ["--reactome_url"])
@@ -23,13 +25,6 @@ class ReactomeCliMain : Callable<Int> {
         required = false
     )
     var outputFilePath: Path? = null
-
-    @CommandLine.Option(
-        names = ["-h", "--help"],
-        usageHelp = true,
-        description = ["Display this help message"]
-    )
-    var helpRequested: Boolean = false
 
     private val logger = KotlinLogging.logger {}
 

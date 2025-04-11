@@ -23,7 +23,7 @@
         <slf4j-reload4j.version>2.0.6</slf4j-reload4j.version>
         <assertj-core.version>3.8.0</assertj-core.version>
         <maven.assembly.plugin.version>3.3.0</maven.assembly.plugin.version>
-
+        <conda.location>/Users/pwolfe/miniconda3/bin/conda</conda.location>
     </properties>
 
     <dependencies>
@@ -244,6 +244,21 @@
                     </execution>
 
                     <execution>
+                        <id>conda-build</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>conda</executable>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>conda</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
                         <id>planemo-test</id>
                         <phase>integration-test</phase>
                         <goals>
@@ -253,7 +268,10 @@
                             <executable>.venv/bin/planemo</executable>
                             <arguments>
                                 <argument>test</argument>
+                                <argument>--conda_use_local</argument>
                                 <argument>galaxy/local_tools/reactome</argument>
+                                <argument>--conda_exec</argument>
+                                <argument>${conda.location}</argument>
                             </arguments>
                         </configuration>
                     </execution>
