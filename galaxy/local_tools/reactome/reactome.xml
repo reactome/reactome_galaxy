@@ -2,19 +2,36 @@
     <description>Perform a Reactome analysis</description>
 
     <command><![CDATA[
-#set $input_final = ''
+#set $subcommand_arg = ''
 
-#if $input_condition.input_source == "text":
-  printf '%s' '$input_condition.input_text' | sed 's/__cn__/\n/g' > identifiers_file.txt;
-  #set $input_final = 'identifiers_file.txt'
-#else:
-  #set $input_final = $input_condition.input_file
+#if $analysis_type == "genes":
+  #if $input_condition.input_source == "text":
+    printf '%s' '$input_condition.input_text' | sed 's/__cn__/\n/g' > identifiers_file.txt;
+    #set $subcommand_arg = 'identifiers_file.txt'
+  #else:
+    #set $subcommand_arg = $input_condition.input_file
+  #end if
+
+#elif $analysis_type == "species":
+  #set $subcommand_arg = $species_name
+
+#elif $analysis_type == "tissues":
+  #set $subcommand_arg = $tissues
 #end if
 
+#set subcommand = ""
+#if $analysis_type == "genes":
+  #set subcommand = "genes --identifiers_file"
+#elif $analysis_type == "species":
+  #set subcommand = "species --speciesName"
+#elif $analysis_type == "tissues":
+  #set subcommand = "tissues --tissues"
+#end if
+
+
 java -jar '${__tool_directory__}/reactome.jar'
+  $subcommand "$subcommand_arg"
   --reactome_url 'https://release.reactome.org'
-  --identifiers_file "$input_final"
-  --output '$output'
   --pathways '$pathways'
   --entities_found '$entities_found'
   --entities_not_found '$entities_not_found'
@@ -24,26 +41,102 @@ java -jar '${__tool_directory__}/reactome.jar'
 ]]></command>
 
     <inputs>
-        <conditional name="input_condition" label="Identifiers Input">
-            <param name="input_source" type="select" label="Choose input type" help="Upload a file or paste its content">
-                <option value="file" selected="true">Upload File</option>
-                <option value="text">Paste Text</option>
+        <conditional name="analysis_type_selector">
+            <param name="analysis_type" type="select" label="Select analysis type">
+                <option value="genes" selected="true">Gene List</option>
+                <option value="species">Species</option>
+                <option value="tissues">Tissues</option>
             </param>
-            <when value="file">
-                <param name="input_file" type="data" format="txt" label="Source File"/>
+
+            <when value="genes">
+                <conditional name="input_condition" label="Identifiers Input">
+                    <param name="input_source" type="select" label="Choose input type" help="Upload a file or paste its content">
+                        <option value="file" selected="true">Upload File</option>
+                        <option value="text">Paste Text</option>
+                    </param>
+                    <when value="file">
+                        <param name="input_file" type="data" format="txt" label="Source File"/>
+                    </when>
+                    <when value="text">
+                        <param name="input_text" type="text" area="true" label="Paste Identifiers Here"/>
+                    </when>
+                </conditional>
+
+                <param name="include_interactors" type="boolean" label="Include Interactors?"
+                       help="IntAct interactors are used to increase the analysis background"
+                       checked="false"/>
             </when>
-            <when value="text">
-                <param name="input_text" type="text" area="true" label="Paste Identifiers Here"/>
+
+            <when value="species">
+                <param name="species_name" type="select" label="Select a species:">
+                    <option value="cow">Bos taurus (cow)</option>
+                    <option value="worm">Caenorhabditis elegans (worm)</option>
+                    <option value="dog">Canis familiaris (dog)</option>
+                    <option value="Danio rerio">Danio rerio (zebrafish)</option>
+                    <option value="amoeba">Dictyostelium discoideum (amoeba)</option>
+                    <option value="fly">Drosophila melanogaster (fly)</option>
+                    <option value="chicken">Gallus gallus (chicken)</option>
+                    <option value="mouse">Mus musculus (mouse)</option>
+                    <option value="tuberculosis">Mycobacterium tuberculosis (TB)</option>
+                    <option value="malaria">Plasmodium falciparum (malaria)</option>
+                    <option value="rat">Rattus norvegicus (rat)</option>
+                    <option value="Saccharomyces cerevisiae">Saccharomyces cerevisiae (yeast)</option>
+                    <option value="fission_yeast">Schizosaccharomyces pombe (fission_yeast)</option>
+                    <option value="pig">Sus scrofa (pig)</option>
+                    <option value="frog">Xenopus tropicalis (frog)</option>
+                </param>
             </when>
+
+            <when value="tissues">
+                <param name="tissues" type="select" label="Select one or more tissues:" multiple="true">
+                    <option value="Adrenal Gland">Adrenal Gland</option>
+                    <option value="Bone Marrow">Bone Marrow</option>
+                    <option value="Breast">Breast</option>
+                    <option value="Bronchus">Bronchus</option>
+                    <option value="Cerebellum">Cerebellum</option>
+                    <option value="Cerebral Cortex">Cerebral Cortex</option>
+                    <option value="Cervix - Uterine">Cervix - Uterine</option>
+                    <option value="Colon">Colon</option>
+                    <option value="Duodenum">Duodenum</option>
+                    <option value="Epididymis">Epididymis</option>
+                    <option value="Esophagus">Esophagus</option>
+                    <option value="Fallopian Tube">Fallopian Tube</option>
+                    <option value="Gall Bladder">Gall Bladder</option>
+                    <option value="Heart Muscle">Heart Muscle</option>
+                    <option value="Hippocampal Formation">Hippocampal Formation</option>
+                    <option value="Kidney">Kidney</option>
+                    <option value="Liver">Liver</option>
+                    <option value="Lung">Lung</option>
+                    <option value="Lymph Node">Lymph Node</option>
+                    <option value="Nasopharynx">Nasopharynx</option>
+                    <option value="Oral Mucosa">Oral Mucosa</option>
+                    <option value="Ovary">Ovary</option>
+                    <option value="Pancreas">Pancreas</option>
+                    <option value="Parathyroid Gland">Parathyroid Gland</option>
+                    <option value="Placenta">Placenta</option>
+                    <option value="Prostate Gland">Prostate Gland</option>
+                    <option value="Rectum">Rectum</option>
+                    <option value="Saliva-secreting Gland">Saliva-secreting Gland</option>
+                    <option value="Seminal Vesicle">Seminal Vesicle</option>
+                    <option value="Skeletal Muscle Tissue">Skeletal Muscle Tissue</option>
+                    <option value="Small Intestine">Small Intestine</option>
+                    <option value="Smooth Muscle Tissue">Smooth Muscle Tissue</option>
+                    <option value="Spleen">Spleen</option>
+                    <option value="Telencephalic Ventricle">Telencephalic Ventricle</option>
+                    <option value="Testis">Testis</option>
+                    <option value="Thyroid Gland">Thyroid Gland</option>
+                    <option value="Tonsil">Tonsil</option>
+                    <option value="Urinary Bladder">Urinary Bladder</option>
+                    <option value="Vagina">Vagina</option>
+                    <option value="Vermiform Appendix">Vermiform Appendix</option>
+                </param>
+            </when>
+
         </conditional>
 
-        <param name="include_interactors" type="boolean" label="Include Interactors?"
-               help="IntAct interactors are used to increase the analysis background"
-               checked="false"/>
     </inputs>
 
     <outputs>
-        <data format="csv" name="output" label="Analysis Results"/>
         <data format="csv" name="pathways" label="Pathways"/>
         <data format="csv" name="entities_found" label="Entities Found"/>
         <data format="csv" name="entities_not_found" label="Entities Not Found"/>
@@ -54,9 +147,20 @@ java -jar '${__tool_directory__}/reactome.jar'
 
     <tests>
         <test>
-            <param name="input_condition|input_source" value="file"/>
-            <param name="input_condition|input_file" value="proteins.txt"/>
-            <output name="output" file="analysis_results.csv"/>
+            <param name="analysis_type_selector|analysis_type" value="genes"/>
+            <param name="analysis_type_selector|input_condition|input_source" value="file"/>
+            <param name="analysis_type_selector|input_condition|input_file" value="proteins.txt"/>
+            <output name="pathways" file="genes_pathways.csv"/>
+        </test>
+        <test>
+            <param name="analysis_type_selector|analysis_type" value="species"/>
+            <param name="analysis_type_selector|species_name" value="Danio rerio"/>
+            <output name="pathways" file="species_pathways.csv"/>
+        </test>
+        <test>
+            <param name="analysis_type_selector|analysis_type" value="tissues"/>
+            <param name="analysis_type_selector|tissues" value="Cerebellum,Cerebral Cortex"/>
+            <output name="pathways" file="tissues_pathways.csv"/>
         </test>
     </tests>
 

@@ -7,65 +7,64 @@ import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.io.StringWriter
-import java.nio.file.Path
-import java.util.Locale
 
 private const val CLI_USER_AGENT = "Mozilla/5.0 (compatible; Reactome CLI/1.0)"
 
 class ReactomeCli(
-
     private val httpClient: HttpClient,
     private val reactomeUrl: String,
-    private val inputFile: String,
-    private val includeInteractors: Boolean,
-    private val pathwaysFile: Path? = null,
-    private val entitiesFoundFile: Path? = null,
-    private val entitiesNotFoundFile: Path? = null,
-    private val resultJsonFile: Path? = null,
-    private val reportPdfFile: Path? = null,
-    private val htmlReportFile: Path? = null,
+) {
 
-    ) {
-
-    fun execute(): String {
-        val responseBody = analyzeUniprot()
+    fun analyseGenes(identifiersFile: String, includeInteractions: Boolean, options: CommonOptions) {
+        val responseBody = analyzeGenes(identifiersFile, includeInteractions)
         val analysisResponse = parseResponse(responseBody)
-
-        if (pathwaysFile != null) {
-            downloadPathways(analysisResponse.summary.token, filename = pathwaysFile.toString())
-        }
-
-        if (entitiesFoundFile != null) {
-            downloadEntitiesFound(analysisResponse.summary.token, filename = entitiesFoundFile.toString())
-        }
-
-        if (entitiesNotFoundFile != null) {
-            downloadEntitiesNotFound(analysisResponse.summary.token, filename = entitiesNotFoundFile.toString())
-        }
-
-        if (resultJsonFile != null) {
-            downloadResultJson(analysisResponse.summary.token, filename = resultJsonFile.toString())
-        }
-
-        if (reportPdfFile != null) {
-            downloadReportPdf(analysisResponse.summary.token, filename = reportPdfFile.toString())
-        }
-
-        if (htmlReportFile != null) {
-            generateHtmlReport(analysisResponse, htmlReportFile.toString())
-        }
-
-        // TODO is this redundant with the pathways csv?
-        val reportGenerator = ReportGenerator()
-        val stringWriter = StringWriter()
-        reportGenerator.writeCsv(analysisResponse, stringWriter)
-        return stringWriter.toString()
+        val token = analysisResponse.summary.token
+        getAnalysisOutput(token, options)
     }
 
-    private fun analyzeUniprot(): String {
+    fun analyseSpecies(speciesName: SpeciesName, options: CommonOptions) {
+        val responseBody = analyzeSpecies(speciesName)
+        val token = extractToken(responseBody)
+        getAnalysisOutput(token, options)
+    }
+
+    fun analyseTissues(tissues: List<TissueName>, options: CommonOptions) {
+        val responseBody = analyzeTissue(tissues)
+        val token = extractToken(responseBody)
+        getAnalysisOutput(token, options)
+    }
+
+    private fun getAnalysisOutput(token: String, options: CommonOptions) {
+
+        if (options.pathwaysFile != null || options.htmlReportFile != null) {
+            val pathwaysData = downloadPathways(token, filename = options.pathwaysFile.toString())
+            val reportGenerator = ReportGenerator(reactomeUrl)
+            val htmlReportFile = options.htmlReportFile?.toString()
+            if (htmlReportFile != null) {
+                reportGenerator.generateHtmlReport(htmlReportFile, pathwaysData, token)
+            }
+        }
+
+        if (options.entitiesFoundFile != null) {
+            downloadEntitiesFound(token, filename = options.entitiesFoundFile.toString())
+        }
+
+        if (options.entitiesNotFoundFile != null) {
+            downloadEntitiesNotFound(token, filename = options.entitiesNotFoundFile.toString())
+        }
+
+        if (options.resultJsonFile != null) {
+            downloadResultJson(token, filename = options.resultJsonFile.toString())
+        }
+
+        if (options.reportPdfFile != null) {
+            downloadReportPdf(token, filename = options.reportPdfFile.toString())
+        }
+    }
+
+    private fun analyzeGenes(inputFile: String, includeInteractors: Boolean): String {
         return runBlocking {
-            val url = pagedUrl(identifiersUrl(), pageSize = 20, page = 1)
+            val url = pagedUrl(identifiersUrl(includeInteractors), pageSize = 20, page = 1)
             val response = httpClient.post(url) {
                 contentType(ContentType.Text.Plain)
                 userAgent(CLI_USER_AGENT)
@@ -74,6 +73,39 @@ class ReactomeCli(
 
             if (response.status.value != 200) {
                 throw Exception("Failed to submit gene list: ${response.status.value} - ${response.body<String>()}")
+            }
+
+            response.body()
+        }
+    }
+
+    private fun analyzeSpecies(speciesName: SpeciesName): String {
+        return runBlocking {
+            val url = pagedUrl(speciesUrl(speciesName), pageSize = 20, page = 1, joinWith = "?")
+            val response = httpClient.get(url) {
+                contentType(ContentType.Text.Plain)
+                userAgent(CLI_USER_AGENT)
+            }
+
+            if (response.status.value != 200) {
+                throw Exception("Failed to submit species: ${response.status.value} - ${response.body<String>()}")
+            }
+
+            response.body()
+        }
+    }
+
+    private fun analyzeTissue(tissues: List<TissueName>): String {
+        return runBlocking {
+            val url = pagedUrl(tissueUrl(), pageSize = 20, page = 1)
+            val response = httpClient.post(url) {
+                contentType(ContentType.Text.Plain)
+                userAgent(CLI_USER_AGENT)
+                setBody(tissuePayload(tissues))
+            }
+
+            if (response.status.value != 200) {
+                throw Exception("Failed to tissues: ${response.status.value} - ${response.body<String>()}")
             }
 
             response.body()
@@ -97,10 +129,12 @@ class ReactomeCli(
         writeToDisk(filename, content)
     }
 
-    private fun downloadPathways(token: String, resource: ResourceType = ResourceType.TOTAL, filename: String) {
+    private fun downloadPathways(token: String, resource: ResourceType = ResourceType.TOTAL, filename: String): String {
         val url = "${analysisUrl()}/download/${token}/pathways/${resource}/pathways.csv"
         val content = getFileContent(url)
+
         writeToDisk(filename, content)
+        return content
     }
 
     private fun downloadResultJson(token: String, filename: String) {
@@ -115,7 +149,7 @@ class ReactomeCli(
         writeToDisk(filename, content)
     }
 
-    private fun getFileContent(url: String): ByteArray {
+    private fun getFileContent(url: String): String {
         return runBlocking {
             val response = httpClient.get(url) {
                 contentType(ContentType.Text.Plain)
@@ -126,112 +160,55 @@ class ReactomeCli(
             }
 
             if (response.status.value != 200) {
-                throw Exception("Request failed: ${url} ${response.status.value} - ${response.body<String>()}")
+                throw Exception("Request failed: $url ${response.status.value} - ${response.body<String>()}")
             }
 
-            response.body<ByteArray>()
+            val contentType = response.contentType()
+            val charset = contentType?.charset() ?: Charsets.UTF_8
+            val contentString = String(response.body<ByteArray>(), charset)
+
+            contentString
         }
-    }
-
-    private fun generateHtmlReport(analysisResponse: AnalysisResponse, htmlReportFile: String) {
-        val htmlContent = StringBuilder()
-        htmlContent.append("<html>")
-        htmlContent.append("<head><title>Reactome Pathway Links</title></head>")
-        htmlContent.append("<style>")
-        htmlContent.append("body { font-family: Arial, sans-serif; margin: 20px; }")
-        htmlContent.append("h1 { color: #333; }")
-        htmlContent.append("table { border-collapse: collapse; width: 100%; margin-top: 20px; }")
-        htmlContent.append("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }")
-        htmlContent.append("th { background-color: #f4f4f4; color: #333; }")
-        htmlContent.append("tr:nth-child(even) { background-color: #f9f9f9; }")
-        htmlContent.append("tr:hover { background-color: #f1f1f1; }")
-        htmlContent.append("a { color: #007bff; text-decoration: none; }")
-        htmlContent.append("a:hover { text-decoration: underline; }")
-        htmlContent.append("</style>")
-        htmlContent.append("<body>")
-        htmlContent.append("<h1>Interactive Pathway Links</h1>")
-        htmlContent.append("<table border=\"1\">")
-        htmlContent.append("<thead>")
-        htmlContent.append("<tr>")
-        htmlContent.append("<th>Pathway name</th>")
-        htmlContent.append("<th>Pathway Diagram</th>")
-        htmlContent.append("<th>#Entities found</th>")
-        htmlContent.append("<th>#Entities total</th>")
-        htmlContent.append("<th>Entities ratio</th>")
-        htmlContent.append("<th>Entities pValue</th>")
-        htmlContent.append("<th>Entities FDR</th>")
-        htmlContent.append("<th>#Reactions found</th>")
-        htmlContent.append("<th>#Reactions total</th>")
-        htmlContent.append("<th>Reactions ratio</th>")
-        htmlContent.append("<th>Species identifier</th>")
-        htmlContent.append("<th>Species name</th>")
-        htmlContent.append("</tr>")
-        htmlContent.append("</thead>")
-        htmlContent.append("<tbody>")
-
-        val token = analysisResponse.summary.token
-        analysisResponse.pathways.forEach { pathway ->
-            val entitiesRatioStr = String.format(Locale.US, "%.12f", pathway.entities.ratio)
-            val entitiesPValueStr = String.format(Locale.US, "%.2E", pathway.entities.pValue)
-            val entitiesFdrStr = String.format(Locale.US, "%.12f", pathway.entities.fdr)
-            val reactionsRatioStr = String.format(Locale.US, "%.12f", pathway.reactions.ratio)
-            val imageUrl = pathwayDiagramUrl(pathway.stId, token)
-            val smallImageUrl = "${imageUrl}&quality=5"
-            val largeImageUrl = "${imageUrl}&quality=10"
-
-            htmlContent.append("<tr>")
-            htmlContent.append("<td><a href=\"${pathwayBrowserLink(pathway.stId, token)}\" target=\"_blank\">${pathway.name}</a></td>")
-            htmlContent.append("<td><a href=\"$largeImageUrl\" target=\"_blank\"><img src=\"$smallImageUrl\" alt=\"Pathway Diagram\" style=\"max-width: 100px; max-height: 100px;\"></a></td>")
-            htmlContent.append("<td>${pathway.entities.found}</td>")
-            htmlContent.append("<td>${pathway.entities.total}</td>")
-            htmlContent.append("<td>${entitiesRatioStr}</td>")
-            htmlContent.append("<td>${entitiesPValueStr}</td>")
-            htmlContent.append("<td>${entitiesFdrStr}</td>")
-            htmlContent.append("<td>${pathway.reactions.found}</td>")
-            htmlContent.append("<td>${pathway.reactions.total}</td>")
-            htmlContent.append("<td>${reactionsRatioStr}</td>")
-            htmlContent.append("<td>${pathway.species.taxId}</td>")
-            htmlContent.append("<td>${pathway.species.name}</td>")
-            htmlContent.append("</tr>")
-        }
-
-        htmlContent.append("</tbody>")
-        htmlContent.append("</table>")
-        htmlContent.append("</body>")
-        htmlContent.append("</html>")
-
-        writeToDisk(htmlReportFile, htmlContent.toString().toByteArray())
     }
 
     private fun analysisUrl(): String {
         return "$reactomeUrl/AnalysisService"
     }
 
-    private fun contentUrl(): String {
-        return "$reactomeUrl/ContentService"
+    private fun pagedUrl(url: String, pageSize: Int, page: Int, joinWith: String = "&"): String {
+        return "$url${joinWith}pageSize=$pageSize&page=$page"
     }
 
-    private fun pathwayBrowserUrl(): String {
-        return "$reactomeUrl/PathwayBrowser"
-    }
-
-    private fun pathwayBrowserLink(pathwayId: String, token: String): String {
-        return "$reactomeUrl/PathwayBrowser/#/${pathwayId}&DTAB=AN&ANALYSIS=${token}"
-    }
-
-    private fun pathwayDiagramUrl(pathwayId: String, token: String): String {
-        return "${contentUrl()}/exporter/diagram/${pathwayId}.png?diagramProfile=Modern&token=$token&analysisProfile=Standard"
-    }
-
-    private fun pagedUrl(url: String, pageSize: Int, page: Int): String {
-        return "$url&pageSize=$pageSize&page=$page"
-    }
-
-    private fun identifiersUrl(): String {
+    private fun identifiersUrl(includeInteractors: Boolean): String {
         return "${analysisUrl()}/identifiers/projection?null&interactors=$includeInteractors"
     }
 
-    private fun writeToDisk(fileName: String, content: ByteArray) {
-        File(fileName).writeBytes(content)
+    private fun speciesUrl(speciesName: SpeciesName): String {
+        return "${analysisUrl()}/species/homoSapiens/${speciesName.dbId}"
+    }
+
+    private fun tissueUrl(): String {
+        return "${analysisUrl()}/identifiers/url/projection?null&interactors=false"
+    }
+
+    private fun tissuePayload(tissues: List<TissueName>): String {
+        val tissueIds = sortedUniqueTissueIds(tissues)
+        return "https://127.0.0.1/ExperimentDigester/experiments/1/sample?included=${tissueIds}&omitNulls=true"
+    }
+
+    private fun sortedUniqueTissueIds(tissues: List<TissueName>): String {
+        return tissues.map { it.tissueId }.distinct().sorted().joinToString(",")
     }
 }
+
+private fun writeToDisk(fileName: String, content: String) {
+    File(fileName).writeText(content)
+}
+
+private fun extractToken(jsonBody: String): String {
+    val tokenRegex = """"token"\s*:\s*"([^"]+)"""".toRegex()
+    val tokenMatch = tokenRegex.find(jsonBody)
+    val tokenAlt = tokenMatch?.groupValues?.get(1)
+    return tokenAlt ?: throw IllegalArgumentException("Token not found in the response")
+}
+
