@@ -33,11 +33,22 @@ java -jar '${__tool_directory__}/reactome.jar'
   $subcommand "$subcommand_arg"
   --reactome_url 'https://release.reactome.org'
   --pathways '$pathways'
-  --entities_found '$entities_found'
-  --entities_not_found '$entities_not_found'
-  --result_json '$result_json'
-  --report_pdf '$report_pdf'
-  --html_report '$report_html'
+  #if $generate_pdf:
+    --pdf_report "$pdf_report"
+  #end if
+  #if $generate_json_report:
+    --result_json "$result_json"
+  #end if
+  #if $generate_entities_found:
+    --entities_found "$entities_found"
+  #end if
+  #if $generate_entities_not_found:
+    --entities_not_found "$entities_not_found"
+  #end if
+  #if $generate_html_report:
+    --html_report "$html_report"
+  #end if
+
 ]]></command>
 
     <inputs>
@@ -134,30 +145,52 @@ java -jar '${__tool_directory__}/reactome.jar'
 
         </conditional>
 
+        <param name="generate_pdf" type="boolean" label="Generate PDF Report?" help="Select if a PDF report should be generated"
+               checked="false"/>
+        <param name="generate_entities_found" type="boolean" label="Generate Entities Found Output?"
+               help="Select if an Entities Found output should be generated" checked="false"/>
+        <param name="generate_entities_not_found" type="boolean" label="Generate Entities Not Found Output?"
+               help="Select if an Entities Not Found output should be generated" checked="false"/>
+        <param name="generate_html_report" type="boolean" label="Generate HTML Report?" help="Select if an HTML report should be generated"
+               checked="false"/>
+        <param name="generate_json_report" type="boolean" label="Generate JSON Report?" help="Select if an JOSN report should be generated"
+               checked="false"/>
+
+
     </inputs>
 
     <outputs>
         <data format="csv" name="pathways" label="Pathways"/>
-        <data format="csv" name="entities_found" label="Entities Found"/>
-        <data format="csv" name="entities_not_found" label="Entities Not Found"/>
-        <data format="json" name="result_json" label="Json result"/>
-        <data format="pdf" name="report_pdf" label="PDF report"/>
-        <data format="html" name="report_html" label="Reactome Pathway Links"/>
+        <data format="csv" name="entities_found" label="Entities Found">
+            <filter>generate_entities_found</filter>
+        </data>
+        <data format="csv" name="entities_not_found" label="Entities Not Found">
+            <filter>generate_entities_not_found</filter>
+        </data>
+        <data format="json" name="result_json" label="Json result">
+            <filter>generate_json_report</filter>
+        </data>
+        <data format="pdf" name="pdf_report" label="PDF report">
+            <filter>generate_pdf</filter>
+        </data>
+        <data format="html" name="html_report" label="Reactome Pathway Links">
+            <filter>generate_html_report</filter>
+        </data>
     </outputs>
 
     <tests>
-        <test>
+        <test expect_num_outputs="1">
             <param name="analysis_type_selector|analysis_type" value="genes"/>
             <param name="analysis_type_selector|input_condition|input_source" value="file"/>
             <param name="analysis_type_selector|input_condition|input_file" value="proteins.txt"/>
             <output name="pathways" file="genes_pathways.csv"/>
         </test>
-        <test>
+        <test expect_num_outputs="1">
             <param name="analysis_type_selector|analysis_type" value="species"/>
             <param name="analysis_type_selector|species_name" value="Danio rerio"/>
             <output name="pathways" file="species_pathways.csv"/>
         </test>
-        <test>
+        <test expect_num_outputs="1">
             <param name="analysis_type_selector|analysis_type" value="tissues"/>
             <param name="analysis_type_selector|tissues" value="Cerebellum,Cerebral Cortex"/>
             <output name="pathways" file="tissues_pathways.csv"/>

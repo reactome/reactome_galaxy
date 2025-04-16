@@ -58,8 +58,8 @@ class ReactomeCli(
             downloadResultJson(token, filename = options.resultJsonFile.toString())
         }
 
-        if (options.reportPdfFile != null) {
-            downloadReportPdf(token, filename = options.reportPdfFile.toString())
+        if (options.pdfReportFile != null) {
+            downloadReportPdf(token, filename = options.pdfReportFile.toString())
         }
     }
 

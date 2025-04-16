@@ -167,10 +167,10 @@ class CommonOptions {
     var reactomeUrl: String = DEFAULT_REACTOME_URL
 
     @Option(
-        names = ["--report_pdf"],
-        description = ["Report pdf output file (optional)"]
+        names = ["--pdf_report"],
+        description = ["PDF report output file (optional)"]
     )
-    var reportPdfFile: Path? = null
+    var pdfReportFile: Path? = null
 
     @Option(
         names = ["--html_report"],
@@ -200,7 +200,7 @@ class CommonOptions {
     var entitiesNotFoundFile: Path? = null
 
     @Option(
-        names = ["--result_json"],
+        names = ["--result_json"], // TODO inconsistently named?
         description = ["Complete analysis results json file (optional)"],
         required = false
     )
