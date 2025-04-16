@@ -69,21 +69,21 @@ java -jar '${__tool_directory__}/reactome.jar'
 
             <when value="species">
                 <param name="species_name" type="select" label="Select a species:">
-                    <option value="cow">Bos taurus (cow)</option>
-                    <option value="worm">Caenorhabditis elegans (worm)</option>
-                    <option value="dog">Canis familiaris (dog)</option>
+                    <option value="Bos taurus">Bos taurus</option>
+                    <option value="Caenorhabditis elegans">Caenorhabditis elegans</option>
+                    <option value="Canis familiaris">Canis familiaris</option>
                     <option value="Danio rerio">Danio rerio (zebrafish)</option>
-                    <option value="amoeba">Dictyostelium discoideum (amoeba)</option>
-                    <option value="fly">Drosophila melanogaster (fly)</option>
-                    <option value="chicken">Gallus gallus (chicken)</option>
-                    <option value="mouse">Mus musculus (mouse)</option>
-                    <option value="tuberculosis">Mycobacterium tuberculosis (TB)</option>
-                    <option value="malaria">Plasmodium falciparum (malaria)</option>
-                    <option value="rat">Rattus norvegicus (rat)</option>
-                    <option value="Saccharomyces cerevisiae">Saccharomyces cerevisiae (yeast)</option>
-                    <option value="fission_yeast">Schizosaccharomyces pombe (fission_yeast)</option>
-                    <option value="pig">Sus scrofa (pig)</option>
-                    <option value="frog">Xenopus tropicalis (frog)</option>
+                    <option value="Dictyostelium discoideum">Dictyostelium discoideum</option>
+                    <option value="Drosophila melanogaster">Drosophila melanogaster</option>
+                    <option value="Gallus gallus">Gallus gallus</option>
+                    <option value="Mus musculus">Mus musculus</option>
+                    <option value="Mycobacterium tuberculosis">Mycobacterium tuberculosis</option>
+                    <option value="Plasmodium falciparum">Plasmodium falciparum</option>
+                    <option value="attus norvegicus">Rattus norvegicus</option>
+                    <option value="Saccharomyces cerevisiae">Saccharomyces cerevisiae</option>
+                    <option value="chizosaccharomyces pombe">Schizosaccharomyces pombe</option>
+                    <option value="Sus scrofa">Sus scrofa</option>
+                    <option value="Xenopus tropicalis">Xenopus tropicalis</option>
                 </param>
             </when>
 
