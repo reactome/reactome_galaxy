@@ -3,6 +3,7 @@ package org.reactome.cli
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -119,55 +120,66 @@ class ReactomeCli(
 
     private fun downloadEntitiesFound(token: String, resource: ResourceType = ResourceType.TOTAL, filename: String) {
         val url = "${analysisUrl()}/download/${token}/entities/found/${resource}/entities_found.csv"
-        val content = getFileContent(url)
-        writeToDisk(filename, content)
+        val content = getTextContent(url)
+        File(filename).writeText(content)
     }
 
     private fun downloadEntitiesNotFound(token: String, filename: String) {
         val url = "${analysisUrl()}/download/${token}/entities/notfound/entities_not_found.csv"
-        val content = getFileContent(url)
-        writeToDisk(filename, content)
+        val content = getTextContent(url)
+        File(filename).writeText(content)
     }
 
     private fun downloadPathways(token: String, resource: ResourceType = ResourceType.TOTAL, filename: String): String {
         val url = "${analysisUrl()}/download/${token}/pathways/${resource}/pathways.csv"
-        val content = getFileContent(url)
-
-        writeToDisk(filename, content)
+        val content = getTextContent(url)
+        File(filename).writeText(content)
         return content
     }
 
     private fun downloadResultJson(token: String, filename: String) {
         val url = "$reactomeUrl/AnalysisService/download/${token}/result.json"
-        val content = getFileContent(url)
-        writeToDisk(filename, content)
+        val content = getTextContent(url)
+        File(filename).writeText(content)
     }
 
     private fun downloadReportPdf(token: String, species: String = "Homo%20sapiens", filename: String) {
         val url = "${analysisUrl()}/report/${token}/${species}/report.pdf"
-        val content = getFileContent(url)
-        writeToDisk(filename, content)
+        val content = getBinaryContent(url)
+        File(filename).writeBytes(content)
     }
 
-    private fun getFileContent(url: String): String {
+    private suspend fun executeHttpRequest(url: String): HttpResponse {
+        val response = httpClient.get(url) {
+            userAgent(CLI_USER_AGENT)
+            header(HttpHeaders.Accept, "text/html,application/xhtml+xml,application/xml,application/pdf;q=0.9,*/*;q=0.8")
+            header(HttpHeaders.AcceptEncoding, "gzip, deflate, br")
+            header(HttpHeaders.AcceptLanguage, "en-US,en;q=0.9")
+        }
+
+        if (response.status != HttpStatusCode.OK) {
+            val errorBody = try {
+                response.body<String>()
+            } catch (e: Exception) {
+                "[Could not read error body: ${e.message}]"
+            }
+            throw Exception("Request failed: $url ${response.status.value} - $errorBody")
+        }
+        return response
+    }
+
+    private fun getTextContent(url: String): String {
         return runBlocking {
-            val response = httpClient.get(url) {
-                contentType(ContentType.Text.Plain)
-                userAgent(CLI_USER_AGENT)
-                header("Accept", "text/html,application/xhtml+xml,application/xml,application/pdf;q=0.9,*/*;q=0.8")
-                header("Accept-Encoding", "gzip, deflate, br")
-                header("Accept-Language", "en-US,en;q=0.9")
-            }
+            val response = executeHttpRequest(url)
+            val charset = response.contentType()?.charset() ?: Charsets.UTF_8
+            String(response.body<ByteArray>(), charset)
+        }
+    }
 
-            if (response.status.value != 200) {
-                throw Exception("Request failed: $url ${response.status.value} - ${response.body<String>()}")
-            }
-
-            val contentType = response.contentType()
-            val charset = contentType?.charset() ?: Charsets.UTF_8
-            val contentString = String(response.body<ByteArray>(), charset)
-
-            contentString
+    private fun getBinaryContent(url: String): ByteArray {
+        return runBlocking {
+            val response = executeHttpRequest(url)
+            response.body<ByteArray>()
         }
     }
 
@@ -199,10 +211,6 @@ class ReactomeCli(
     private fun sortedUniqueTissueIds(tissues: List<TissueName>): String {
         return tissues.map { it.tissueId }.distinct().sorted().joinToString(",")
     }
-}
-
-private fun writeToDisk(fileName: String, content: String) {
-    File(fileName).writeText(content)
 }
 
 private fun extractToken(jsonBody: String): String {
