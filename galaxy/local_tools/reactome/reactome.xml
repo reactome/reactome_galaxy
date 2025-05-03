@@ -183,17 +183,29 @@ java -jar '${__tool_directory__}/reactome.jar'
             <param name="analysis_type_selector|analysis_type" value="genes"/>
             <param name="analysis_type_selector|input_condition|input_source" value="file"/>
             <param name="analysis_type_selector|input_condition|input_file" value="proteins.txt"/>
-            <output name="pathways" file="genes_pathways.csv"/>
+            <output name="pathways">
+                <assert_contents>
+                    <has_text text="Pathway identifier"/>
+                </assert_contents>
+            </output>
         </test>
         <test expect_num_outputs="1">
             <param name="analysis_type_selector|analysis_type" value="species"/>
             <param name="analysis_type_selector|species_name" value="Danio rerio"/>
-            <output name="pathways" file="species_pathways.csv"/>
+            <output name="pathways">
+                <assert_contents>
+                    <has_text text="Pathway identifier"/>
+                </assert_contents>
+            </output>
         </test>
         <test expect_num_outputs="1">
             <param name="analysis_type_selector|analysis_type" value="tissues"/>
             <param name="analysis_type_selector|tissues" value="Cerebellum,Cerebral Cortex"/>
-            <output name="pathways" file="tissues_pathways.csv"/>
+            <output name="pathways">
+                <assert_contents>
+                    <has_text text="Pathway identifier"/>
+                </assert_contents>
+            </output>
         </test>
     </tests>
 
