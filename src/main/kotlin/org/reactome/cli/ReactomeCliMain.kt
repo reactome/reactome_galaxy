@@ -41,7 +41,9 @@ class GeneCommand : Callable<Int> {
     @Option(
         names = ["--project_to_human"],
         description = ["Convert all non-human identifiers to their human equivalents (true/false)"],
-        required = false
+        required = false,
+        defaultValue = "true",
+        arity = "1"
     )
     var projectToHuman: Boolean = true
 
@@ -76,7 +78,7 @@ class GeneCommand : Callable<Int> {
         logger.info { "Starting reactome CLI" }
         return try {
             val reactomeCli = ReactomeCli(httpClient(), commonOptions.reactomeUrl)
-            reactomeCli.analyseGenes(identifiersFilePath, includeInteractors, commonOptions)
+            reactomeCli.analyseGenes(identifiersFilePath, projectToHuman, includeInteractors, commonOptions)
             SUCCESS_EXIT_CODE
         } catch (e: Exception) {
             logger.error("Could not complete CLI execution", e)
