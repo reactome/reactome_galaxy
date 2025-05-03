@@ -18,8 +18,7 @@ class ReactomeCli(
 
     fun analyseGenes(identifiersFile: String, includeInteractions: Boolean, options: CommonOptions) {
         val responseBody = analyzeGenes(identifiersFile, includeInteractions)
-        val analysisResponse = parseResponse(responseBody)
-        val token = analysisResponse.summary.token
+        val token = extractToken(responseBody)
         getAnalysisOutput(token, options)
     }
 
