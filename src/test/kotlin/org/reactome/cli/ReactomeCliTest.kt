@@ -21,7 +21,7 @@ class ReactomeCliTest {
     @Test
     fun `Should return CSV for protein analysis`() {
         val cli = reactomeCli()
-        val csvBody = cli.analyseGenes(UNITPROT_INPUT_FILE, includeInteractions = true, CommonOptions())
+        val csvBody = cli.analyseGenes(UNITPROT_INPUT_FILE, projectToHuman = true, includeInteractions = true, CommonOptions())
 
         val expectedCsvBody = """
             "Pathway name","#Entities found","#Entities total","Entities ratio","Entities pValue","Entities FDR","#Reactions found","#Reactions total","Reactions ratio","Species identifier","Species name"
@@ -35,7 +35,7 @@ class ReactomeCliTest {
     @Test
     fun `Should throw exception on http error`() {
         val cli = ReactomeCli(testHttpClient(JSON_RESPONSE), "WRONG_URL")
-        assertThatThrownBy { cli.analyseGenes(UNITPROT_INPUT_FILE, includeInteractions = true, CommonOptions()) }
+        assertThatThrownBy { cli.analyseGenes(UNITPROT_INPUT_FILE, projectToHuman = true, includeInteractions = true, CommonOptions()) }
             .isInstanceOf(Exception::class.java)
             .hasMessage("Failed to submit gene list: 404 - Not Found")
     }

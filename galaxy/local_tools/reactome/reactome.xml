@@ -3,6 +3,8 @@
 
     <command><![CDATA[
 #set $subcommand_arg = ''
+#set $project_to_human_arg = ''
+#set $include_interactors_arg = ''
 
 #if $analysis_type == "genes":
   #if $input_condition.input_source == "text":
@@ -10,6 +12,18 @@
     #set $subcommand_arg = 'identifiers_file.txt'
   #else:
     #set $subcommand_arg = $input_condition.input_file
+  #end if
+
+  #if $project_to_human == "true":
+    #set $project_to_human_arg = "--project_to_human true"
+  #else:
+    #set $project_to_human_arg = "--project_to_human false"
+  #end if
+
+  #if $include_interactors == "true":
+    #set $include_interactors_arg = "--include_interactors true"
+  #else:
+    #set $include_interactors_arg = "--include_interactors false"
   #end if
 
 #elif $analysis_type == "species":
@@ -31,6 +45,7 @@
 
 java -jar '${__tool_directory__}/reactome.jar'
   $subcommand "$subcommand_arg"
+  $project_to_human_arg $include_interactors_arg
   --reactome_url 'https://release.reactome.org'
   --pathways '$pathways'
   #if $generate_pdf:
@@ -72,6 +87,10 @@ java -jar '${__tool_directory__}/reactome.jar'
                         <param name="input_text" type="text" area="true" label="Paste Identifiers Here"/>
                     </when>
                 </conditional>
+
+                <param name="project_to_human" type="boolean" label="Project to Human?"
+                       help="All non-human identifiers are converted to their human equivalents"
+                       checked="true"/>
 
                 <param name="include_interactors" type="boolean" label="Include Interactors?"
                        help="IntAct interactors are used to increase the analysis background"
@@ -155,7 +174,6 @@ java -jar '${__tool_directory__}/reactome.jar'
                checked="false"/>
         <param name="generate_json_report" type="boolean" label="Generate JSON Report?" help="Select if an JOSN report should be generated"
                checked="false"/>
-
 
     </inputs>
 

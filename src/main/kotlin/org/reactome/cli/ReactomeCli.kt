@@ -16,8 +16,8 @@ class ReactomeCli(
     private val reactomeUrl: String,
 ) {
 
-    fun analyseGenes(identifiersFile: String, includeInteractions: Boolean, options: CommonOptions) {
-        val responseBody = analyzeGenes(identifiersFile, includeInteractions)
+    fun analyseGenes(identifiersFile: String, projectToHuman: Boolean, includeInteractions: Boolean, options: CommonOptions) {
+        val responseBody = analyzeGenes(identifiersFile, projectToHuman, includeInteractions)
         val token = extractToken(responseBody)
         getAnalysisOutput(token, options)
     }
@@ -62,9 +62,9 @@ class ReactomeCli(
         }
     }
 
-    private fun analyzeGenes(inputFile: String, includeInteractors: Boolean): String {
+    private fun analyzeGenes(inputFile: String, projectToHuman: Boolean, includeInteractors: Boolean): String {
         return runBlocking {
-            val url = pagedUrl(identifiersUrl(includeInteractors), pageSize = 20, page = 1)
+            val url = pagedUrl(identifiersUrl(projectToHuman, includeInteractors), pageSize = 20, page = 1)
             val response = httpClient.post(url) {
                 contentType(ContentType.Text.Plain)
                 userAgent(CLI_USER_AGENT)
@@ -190,8 +190,9 @@ class ReactomeCli(
         return "$url${joinWith}pageSize=$pageSize&page=$page"
     }
 
-    private fun identifiersUrl(includeInteractors: Boolean): String {
-        return "${analysisUrl()}/identifiers/projection?null&interactors=$includeInteractors"
+    private fun identifiersUrl(projectToHuman: Boolean, includeInteractors: Boolean): String {
+        val projection = if (projectToHuman) "projection" else ""
+        return "${analysisUrl()}/identifiers/${projection}?null&interactors=$includeInteractors"
     }
 
     private fun speciesUrl(speciesName: SpeciesName): String {
