@@ -103,9 +103,7 @@ class ReportGenerator(private val reactomeUrl: String) {
                     }
 
 
-                    in FIELDS_TO_SKIP -> {
-                        htmlContent.append("<td>skip</td>")
-                    }
+                    in FIELDS_TO_SKIP -> {}
 
                     else -> {
                         htmlContent.append("<td>${value}</td>")
