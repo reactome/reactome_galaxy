@@ -37,3 +37,7 @@ target
 
 # conda build artifacts
 conda-bld/
+
+# planemo test output
+tool_test_output.html
+tool_test_output.json

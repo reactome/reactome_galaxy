@@ -8,7 +8,7 @@
 
 #if $analysis_type == "genes":
   #if $input_condition.input_source == "text":
-    printf '%s' '$input_condition.input_text' | sed 's/__cn__/\n/g' > identifiers_file.txt;
+    printf '%s' '$input_condition.input_text' | sed 's/__cn__/\n/g' | sed 's/__pd__/#/g' | sed 's/__tc__/\t/g' > identifiers_file.txt;
     #set $subcommand_arg = 'identifiers_file.txt'
   #else:
     #set $subcommand_arg = $input_condition.input_file
