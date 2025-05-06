@@ -3,7 +3,7 @@ package:
   version: "0.1.0"
 
 source:
-  path: ../target/reactome-cli-local-SNAPSHOT-jar-with-dependencies.jar
+  path: ../target/reactome-jar-with-dependencies.jar
 
 build:
   noarch: generic
@@ -14,6 +14,8 @@ requirements:
     - openjdk>=8
   run:
     - openjdk>=8
+    - bioconductor-reactomegsa
+    - bioconductor-reactomegsa.data
 
 test:
   commands:

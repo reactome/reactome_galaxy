@@ -12,14 +12,12 @@ $ mvn package
 
 # build package via docker
 $ docker run --rm -v "$(pwd)":/workdir -w /workdir condaforge/mambaforge \
-  /bin/bash -c "conda install -y conda-build && conda build --output-folder /workdir/conda-bld conda"
+  /bin/bash -c "conda install -y conda-build && conda build -c bioconda -c conda-forge --output-folder /workdir/conda-bld conda"
 ```
 
 If successful, the package will be under the `conda-bld` directory.
 
-Note that when test-installing the package from a local file, dependency resolution for
-openjdk is not performed. The -use-local flag is used to bypass this. For example,
-using the same docker container:
+To interactively test install the package, you can use the same docker container:
 
 ```bash
 # run container interactively
@@ -32,7 +30,7 @@ $ conda index /workdir/conda-bld
 # create a test env and install the package
 $ conda create -n testenv -y
 $ conda activate testenv
-$ conda install -c file:///workdir/conda-bld/ reactome-cli -y
+$ conda install -c file:///workdir/conda-bld/ -c bioconda -c conda-forge reactome-cli -y
 
 # test the package
 $ reactome --help
