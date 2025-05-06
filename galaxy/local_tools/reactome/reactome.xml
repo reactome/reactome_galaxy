@@ -1,6 +1,10 @@
 <tool id="reactome" name="Reactome Analysis" version="0.1.0">
     <description>Perform a Reactome analysis</description>
 
+    <requirements>
+        <requirement type="package" version="1.20.0">bioconductor-reactomegsa</requirement>
+    </requirements>
+
     <command><![CDATA[
 #set $subcommand_arg = ''
 #set $project_to_human_arg = ''
