@@ -21,6 +21,7 @@ private const val FAILURE_EXIT_CODE = 1
     name = "reactome-cli",
     description = ["A CLI tool for gene analysis and species processing"],
     subcommands = [GeneCommand::class, SpeciesCommand::class, TissuesCommand::class],
+    mixinStandardHelpOptions = true
 )
 class ReactomeCliMain : Runnable {
     override fun run() {
@@ -64,13 +65,6 @@ class GeneCommand : Callable<Int> {
         description = ["Enable verbose mode"]
     )
     var verbose: Boolean = false
-
-    @Option(
-        names = ["-h", "--help"],
-        usageHelp = true,
-        description = ["Display this help message"]
-    )
-    var helpRequested: Boolean = false
 
     private val logger = KotlinLogging.logger {}
 
