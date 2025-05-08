@@ -20,7 +20,7 @@
         <mockk.version>1.13.8</mockk.version>
         <ktor-client.version>3.0.3</ktor-client.version>
         <kotlin-logging-jvm.version>3.0.5</kotlin-logging-jvm.version>
-        <slf4j-reload4j.version>2.0.6</slf4j-reload4j.version>
+        <slf4j-reload4j.version>2.0.16</slf4j-reload4j.version>
         <assertj-core.version>3.8.0</assertj-core.version>
         <maven.assembly.plugin.version>3.3.0</maven.assembly.plugin.version>
         <conda.location>/Users/pwolfe/miniconda3/bin/conda</conda.location>
