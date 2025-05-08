@@ -1,25 +1,254 @@
 <tool id="reactome" name="Reactome Analysis" version="0.1.0">
     <description>Perform a Reactome analysis</description>
-    <command>java -jar '${__tool_directory__}/reactome.jar'
-        --reactome_url 'http://reactome.org' --protein_file_path '$input' --output '$output'
-    </command>
+
+    <command><![CDATA[
+#set $subcommand_arg = ''
+#set $project_to_human_arg = ''
+#set $include_interactors_arg = ''
+
+#if $analysis_type == "genes":
+  #if $input_condition.input_source == "text":
+    printf '%s' '$input_condition.input_text' | sed 's/__cn__/\n/g' | sed 's/__pd__/#/g' | sed 's/__tc__/\t/g' > identifiers_file.txt;
+    #set $subcommand_arg = 'identifiers_file.txt'
+  #else:
+    #set $subcommand_arg = $input_condition.input_file
+  #end if
+
+  #if $project_to_human == "true":
+    #set $project_to_human_arg = "--project_to_human true"
+  #else:
+    #set $project_to_human_arg = "--project_to_human false"
+  #end if
+
+  #if $include_interactors == "true":
+    #set $include_interactors_arg = "--include_interactors true"
+  #else:
+    #set $include_interactors_arg = "--include_interactors false"
+  #end if
+
+#elif $analysis_type == "species":
+  #set $subcommand_arg = $species_name
+
+#elif $analysis_type == "tissues":
+  #set $subcommand_arg = $tissues
+#end if
+
+#set subcommand = ""
+#if $analysis_type == "genes":
+  #set subcommand = "genes --identifiers_file"
+#elif $analysis_type == "species":
+  #set subcommand = "species --speciesName"
+#elif $analysis_type == "tissues":
+  #set subcommand = "tissues --tissues"
+#end if
+
+
+java -jar '${__tool_directory__}/reactome.jar'
+  $subcommand "$subcommand_arg"
+  $project_to_human_arg $include_interactors_arg
+  --reactome_url 'https://release.reactome.org'
+  --pathways '$pathways'
+  #if $generate_pdf:
+    --pdf_report "$pdf_report"
+  #end if
+  #if $generate_json_report:
+    --result_json "$result_json"
+  #end if
+  #if $generate_entities_found:
+    --entities_found "$entities_found"
+  #end if
+  #if $generate_entities_not_found:
+    --entities_not_found "$entities_not_found"
+  #end if
+  #if $generate_html_report:
+    --html_report "$html_report"
+  #end if
+
+]]></command>
+
     <inputs>
-        <param format="txt" name="input" type="data" label="Source file"/>
+        <conditional name="analysis_type_selector">
+            <param name="analysis_type" type="select" label="Select analysis type">
+                <option value="genes" selected="true">Gene List</option>
+                <option value="species">Species</option>
+                <option value="tissues">Tissues</option>
+            </param>
+
+            <when value="genes">
+                <conditional name="input_condition" label="Identifiers Input">
+                    <param name="input_source" type="select" label="Choose input type" help="Upload a file or paste its content">
+                        <option value="file" selected="true">Upload File</option>
+                        <option value="text">Paste Text</option>
+                    </param>
+                    <when value="file">
+                        <param name="input_file" type="data" format="txt" label="Source File"/>
+                    </when>
+                    <when value="text">
+                        <param name="input_text" type="text" area="true" label="Paste Identifiers Here"/>
+                    </when>
+                </conditional>
+
+                <param name="project_to_human" type="boolean" label="Project to Human?"
+                       help="All non-human identifiers are converted to their human equivalents"
+                       checked="true"/>
+
+                <param name="include_interactors" type="boolean" label="Include Interactors?"
+                       help="IntAct interactors are used to increase the analysis background"
+                       checked="false"/>
+            </when>
+
+            <when value="species">
+                <param name="species_name" type="select" label="Select a species:">
+                    <option value="Bos taurus">Bos taurus</option>
+                    <option value="Caenorhabditis elegans">Caenorhabditis elegans</option>
+                    <option value="Canis familiaris">Canis familiaris</option>
+                    <option value="Danio rerio">Danio rerio (zebrafish)</option>
+                    <option value="Dictyostelium discoideum">Dictyostelium discoideum</option>
+                    <option value="Drosophila melanogaster">Drosophila melanogaster</option>
+                    <option value="Gallus gallus">Gallus gallus</option>
+                    <option value="Mus musculus">Mus musculus</option>
+                    <option value="Mycobacterium tuberculosis">Mycobacterium tuberculosis</option>
+                    <option value="Plasmodium falciparum">Plasmodium falciparum</option>
+                    <option value="attus norvegicus">Rattus norvegicus</option>
+                    <option value="Saccharomyces cerevisiae">Saccharomyces cerevisiae</option>
+                    <option value="chizosaccharomyces pombe">Schizosaccharomyces pombe</option>
+                    <option value="Sus scrofa">Sus scrofa</option>
+                    <option value="Xenopus tropicalis">Xenopus tropicalis</option>
+                </param>
+            </when>
+
+            <when value="tissues">
+                <param name="tissues" type="select" label="Select one or more tissues:" multiple="true">
+                    <option value="Adrenal Gland">Adrenal Gland</option>
+                    <option value="Bone Marrow">Bone Marrow</option>
+                    <option value="Breast">Breast</option>
+                    <option value="Bronchus">Bronchus</option>
+                    <option value="Cerebellum">Cerebellum</option>
+                    <option value="Cerebral Cortex">Cerebral Cortex</option>
+                    <option value="Cervix - Uterine">Cervix - Uterine</option>
+                    <option value="Colon">Colon</option>
+                    <option value="Duodenum">Duodenum</option>
+                    <option value="Epididymis">Epididymis</option>
+                    <option value="Esophagus">Esophagus</option>
+                    <option value="Fallopian Tube">Fallopian Tube</option>
+                    <option value="Gall Bladder">Gall Bladder</option>
+                    <option value="Heart Muscle">Heart Muscle</option>
+                    <option value="Hippocampal Formation">Hippocampal Formation</option>
+                    <option value="Kidney">Kidney</option>
+                    <option value="Liver">Liver</option>
+                    <option value="Lung">Lung</option>
+                    <option value="Lymph Node">Lymph Node</option>
+                    <option value="Nasopharynx">Nasopharynx</option>
+                    <option value="Oral Mucosa">Oral Mucosa</option>
+                    <option value="Ovary">Ovary</option>
+                    <option value="Pancreas">Pancreas</option>
+                    <option value="Parathyroid Gland">Parathyroid Gland</option>
+                    <option value="Placenta">Placenta</option>
+                    <option value="Prostate Gland">Prostate Gland</option>
+                    <option value="Rectum">Rectum</option>
+                    <option value="Saliva-secreting Gland">Saliva-secreting Gland</option>
+                    <option value="Seminal Vesicle">Seminal Vesicle</option>
+                    <option value="Skeletal Muscle Tissue">Skeletal Muscle Tissue</option>
+                    <option value="Small Intestine">Small Intestine</option>
+                    <option value="Smooth Muscle Tissue">Smooth Muscle Tissue</option>
+                    <option value="Spleen">Spleen</option>
+                    <option value="Telencephalic Ventricle">Telencephalic Ventricle</option>
+                    <option value="Testis">Testis</option>
+                    <option value="Thyroid Gland">Thyroid Gland</option>
+                    <option value="Tonsil">Tonsil</option>
+                    <option value="Urinary Bladder">Urinary Bladder</option>
+                    <option value="Vagina">Vagina</option>
+                    <option value="Vermiform Appendix">Vermiform Appendix</option>
+                </param>
+            </when>
+
+        </conditional>
+
+        <param name="generate_pdf" type="boolean" label="Generate PDF Report?" help="Select if a PDF report should be generated"
+               checked="false"/>
+        <param name="generate_entities_found" type="boolean" label="Generate Entities Found Output?"
+               help="Select if an Entities Found output should be generated" checked="false"/>
+        <param name="generate_entities_not_found" type="boolean" label="Generate Entities Not Found Output?"
+               help="Select if an Entities Not Found output should be generated" checked="false"/>
+        <param name="generate_html_report" type="boolean" label="Generate HTML Report?" help="Select if an HTML report should be generated"
+               checked="false"/>
+        <param name="generate_json_report" type="boolean" label="Generate JSON Report?" help="Select if an JOSN report should be generated"
+               checked="false"/>
+
     </inputs>
+
     <outputs>
-        <data format="csv" name="output"/>
+        <data format="csv" name="pathways" label="Pathways"/>
+        <data format="csv" name="entities_found" label="Entities Found">
+            <filter>generate_entities_found</filter>
+        </data>
+        <data format="csv" name="entities_not_found" label="Entities Not Found">
+            <filter>generate_entities_not_found</filter>
+        </data>
+        <data format="json" name="result_json" label="Json result">
+            <filter>generate_json_report</filter>
+        </data>
+        <data format="pdf" name="pdf_report" label="PDF report">
+            <filter>generate_pdf</filter>
+        </data>
+        <data format="html" name="html_report" label="Reactome Pathway Links">
+            <filter>generate_html_report</filter>
+        </data>
     </outputs>
 
     <tests>
-        <test>
-            <param name="input" value="proteins.txt"/>
-            <output name="output" file="analysis_results.csv"/>
+        <test expect_num_outputs="1">
+            <param name="analysis_type_selector|analysis_type" value="genes"/>
+            <param name="analysis_type_selector|input_condition|input_source" value="file"/>
+            <param name="analysis_type_selector|input_condition|input_file" value="proteins.txt"/>
+            <output name="pathways">
+                <assert_contents>
+                    <has_text text="Pathway identifier"/>
+                </assert_contents>
+            </output>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="analysis_type_selector|analysis_type" value="species"/>
+            <param name="analysis_type_selector|species_name" value="Danio rerio"/>
+            <output name="pathways">
+                <assert_contents>
+                    <has_text text="Pathway identifier"/>
+                </assert_contents>
+            </output>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="analysis_type_selector|analysis_type" value="tissues"/>
+            <param name="analysis_type_selector|tissues" value="Cerebellum,Cerebral Cortex"/>
+            <output name="pathways">
+                <assert_contents>
+                    <has_text text="Pathway identifier"/>
+                </assert_contents>
+            </output>
         </test>
     </tests>
 
-    <help>
-        Perform a Reactome analysis on a list of proteins
-    </help>
+    <help><![CDATA[
+        `Reactome <https://reactome.org>`_ is a curated database of pathways and reactions in human biology.
+
+        This tool will perform an analysis on a list of gene/proteins provided as identifiers, one per line:
+
+        .. code-block:: text
+
+            #GBM Uniprot
+            P01023
+            Q99758
+            O15439
+            O43184
+            Q13444
+            P82987
+
+        Running the analysis will produce a list of pathways and a PDF report, along with other analysis details.
+
+        .. class:: warningmark
+
+        For more, see the `Reactome User Guide <https://reactome.org/userguide>`_
+
+    ]]></help>
 
     <citations>
         <citation type="doi">0.1093/nar/gkad1025</citation>
