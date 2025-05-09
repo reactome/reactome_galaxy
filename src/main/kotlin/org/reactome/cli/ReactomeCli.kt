@@ -112,11 +112,6 @@ class ReactomeCli(
         }
     }
 
-    private fun parseResponse(response: String): AnalysisResponse {
-        val json = Json { ignoreUnknownKeys = true }
-        return json.decodeFromString<AnalysisResponse>(response)
-    }
-
     private fun downloadEntitiesFound(token: String, resource: ResourceType = ResourceType.TOTAL, filename: String) {
         val url = "${analysisUrl()}/download/${token}/entities/found/${resource}/entities_found.csv"
         val content = getTextContent(url)
