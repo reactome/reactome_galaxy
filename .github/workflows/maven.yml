@@ -27,12 +27,9 @@ jobs:
       run: |
         pipx install virtualenv
     - name: Set up Miniconda
-      uses: conda-incubator/setup-miniconda@v2
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        auto-update-conda: true
-        python-version: 3.9
-        miniforge-variant: Miniconda3
-        activate-environment: test-env
-        use-only-tar-bz2: true
+        auto-activate-base: true
+        activate-environment: ""
     - name: Build with Maven
-      run: mvn -B package --file pom.xml -Dconda.location=/usr/share/miniconda/bin/conda
+      run: mvn -B package --file pom.xml -Dconda.location=$CONDA
