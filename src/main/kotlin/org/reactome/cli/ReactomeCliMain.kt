@@ -1,16 +1,16 @@
 package org.reactome.cli
 
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
+import java.nio.file.Path
+import java.util.concurrent.Callable
+import kotlin.system.exitProcess
 import mu.KotlinLogging
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Mixin
 import picocli.CommandLine.Option
-import java.nio.file.Path
-import java.util.concurrent.Callable
-import kotlin.system.exitProcess
 
 private const val DEFAULT_TIMEOUT_MILLIS = 60_000L
 private const val DEFAULT_REACTOME_URL = "https://reactome.org"
@@ -21,6 +21,7 @@ private const val FAILURE_EXIT_CODE = 1
     name = "reactome-cli",
     description = ["A CLI tool for gene analysis and species processing"],
     subcommands = [GeneCommand::class, SpeciesCommand::class, TissuesCommand::class],
+    mixinStandardHelpOptions = true
 )
 class ReactomeCliMain : Runnable {
     override fun run() {
@@ -64,13 +65,6 @@ class GeneCommand : Callable<Int> {
         description = ["Enable verbose mode"]
     )
     var verbose: Boolean = false
-
-    @Option(
-        names = ["-h", "--help"],
-        usageHelp = true,
-        description = ["Display this help message"]
-    )
-    var helpRequested: Boolean = false
 
     private val logger = KotlinLogging.logger {}
 

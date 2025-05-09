@@ -1,6 +1,10 @@
-<tool id="reactome" name="Reactome Analysis" version="0.1.0">
+<tool id="reactome" name="Reactome Analysis" version="0.0.0">
     <description>Perform a Reactome analysis</description>
 
+    <requirements>
+        <requirement type="package" version="0.0.0">reactome-cli</requirement>
+    </requirements>
+    
     <command><![CDATA[
 #set $subcommand_arg = ''
 #set $project_to_human_arg = ''
@@ -43,7 +47,7 @@
 #end if
 
 
-java -jar '${__tool_directory__}/reactome.jar'
+reactome
   $subcommand "$subcommand_arg"
   $project_to_human_arg $include_interactors_arg
   --reactome_url 'https://release.reactome.org'
