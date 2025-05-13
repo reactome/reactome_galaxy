@@ -2,7 +2,7 @@
     <description>Perform a Reactome analysis</description>
 
     <requirements>
-        <requirement type="package" version="0.0.0">reactome-cli</requirement>
+        <requirement type="package" version="0.0.1">reactome-cli</requirement>
     </requirements>
     
     <command><![CDATA[

@@ -1,14 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-mkdir -p $PREFIX/lib/reactome
-cp $SRC_DIR/reactome-jar-with-dependencies.jar $PREFIX/lib/reactome/reactome.jar
+TGT="$PREFIX/share/$PKG_NAME-$PKG_VERSION-$PKG_BUILDNUM"
+[ -d "$TGT" ] || mkdir -p "$TGT"
+[ -d "${PREFIX}/bin" ] || mkdir -p "${PREFIX}/bin"
 
-cat > $PREFIX/bin/reactome <<EOF
-#!/bin/bash
-exec java -jar "\${CONDA_PREFIX}/lib/reactome/reactome.jar" "\$@"
+cd "${SRC_DIR}"
+mv reactome-jar-with-dependencies.jar $TGT/reactome-cli.jar
 
-EOF
-
-chmod +x $PREFIX/bin/reactome
-
+cp $RECIPE_DIR/reactome.sh $TGT/reactome
+ln -s $TGT/reactome $PREFIX/bin
+chmod 0755 "${PREFIX}/bin/reactome"
