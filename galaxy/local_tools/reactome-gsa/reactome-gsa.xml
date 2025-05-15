@@ -1,0 +1,96 @@
+<tool id="reactome" name="Reactome GSA Analysis" version="0.0.0">
+    <description>Perform a ReactomeGSA analysis</description>
+
+    <requirements>
+        <requirement type="package" version="1.20.0">bioconductor-reactomegsa</requirement>
+        <requirement type="package" version="1.20.0">bioconductor-reactomegsa.data</requirement>
+        <requirement type="package" version="1.20.0">r-optparse</requirement>
+    </requirements>
+
+    <stdio>
+        <exit_code range="1:" level="fatal" description="Tool failed with a non-zero exit code."/>
+        <regex match="Error:" level="fatal" description="Tool encountered an error."/>
+    </stdio>
+    
+    <command><![CDATA[
+
+Rscript ${__tool_directory__}/reactome_analysis.R --method Camera --name GSE1297 -o '$pathways' 2>&1
+
+]]></command>
+
+    <inputs>
+        <conditional name="analysis_type_selector">
+            <param name="analysis_type" type="select" label="Select analysis type">
+                <option value="PADOG" selected="true">PADOG</option>
+                <option value="Camera">Camera</option>
+                <option value="ssGSEA">ssGSEA</option>
+            </param>
+
+            <when value="PADOG">
+
+                <param name="project_to_human" type="boolean" label="Project to Human?"
+                       help="All non-human identifiers are converted to their human equivalents"
+                       checked="true"/>
+
+                <param name="include_interactors" type="boolean" label="Include Interactors?"
+                       help="IntAct interactors are used to increase the analysis background"
+                       checked="false"/>
+            </when>
+
+            <when value="Camera">
+                <param name="dataset" type="select" label="select a dataset:">
+                    <option value="GSE1297">GSE1297</option>
+                    <option value="TODO_MORE">TODO more</option>
+                </param>
+            </when>
+
+            <when value="ssGSEA">
+                <param name="dataset" type="select" label="select a dataset:">
+                    <option value="GSE1297">GSE1297</option>
+                    <option value="TODO_MORE">TODO more</option>
+                </param>
+            </when>
+
+        </conditional>
+
+        <param name="generate_pdf" type="boolean" label="Generate PDF Report?" help="Select if a PDF report should be generated"
+               checked="false"/>
+        <param name="generate_entities_found" type="boolean" label="Generate Entities Found Output?"
+               help="Select if an Entities Found output should be generated" checked="false"/>
+        <param name="generate_entities_not_found" type="boolean" label="Generate Entities Not Found Output?"
+               help="Select if an Entities Not Found output should be generated" checked="false"/>
+        <param name="generate_html_report" type="boolean" label="Generate HTML Report?" help="Select if an HTML report should be generated"
+               checked="false"/>
+        <param name="generate_json_report" type="boolean" label="Generate JSON Report?" help="Select if an JOSN report should be generated"
+               checked="false"/>
+
+    </inputs>
+
+    <outputs>
+        <data format="csv" name="pathways" label="Pathways"/>
+        <data format="csv" name="entities_found" label="Entities Found">
+            <filter>generate_entities_found</filter>
+        </data>
+        <data format="csv" name="entities_not_found" label="Entities Not Found">
+            <filter>generate_entities_not_found</filter>
+        </data>
+        <data format="json" name="result_json" label="Json result">
+            <filter>generate_json_report</filter>
+        </data>
+        <data format="pdf" name="pdf_report" label="PDF report">
+            <filter>generate_pdf</filter>
+        </data>
+        <data format="html" name="html_report" label="Reactome Pathway Links">
+            <filter>generate_html_report</filter>
+        </data>
+    </outputs>
+
+    <help><![CDATA[
+        `Reactome <https://reactome.org>`_ is a curated database of pathways and reactions in human biology.
+    ]]></help>
+
+    <citations>
+        <citation type="doi">0.1093/nar/gkad1025</citation>
+    </citations>
+
+</tool>
