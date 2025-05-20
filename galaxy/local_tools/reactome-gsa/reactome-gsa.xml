@@ -90,7 +90,15 @@ Rscript ${__tool_directory__}/reactome_analysis.R --method Camera --name GSE1297
     ]]></help>
 
     <citations>
-        <citation type="doi">0.1093/nar/gkad1025</citation>
+        <citation type="doi">10.1093/bioinformatics/btae338</citation>
+        <citation type="bibtex">
+            @software{ReactomeGSA,
+            author = {Griss, J.},
+            title = {R client for the REACTOME Analysis Service for comparative multi-omics gene set analysis},
+            year = {2019},
+            url = {https://github.com/reactome/ReactomeGSA}
+            }
+        </citation>
     </citations>
 
 </tool>
