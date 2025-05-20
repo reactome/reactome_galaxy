@@ -4,14 +4,14 @@
     <requirements>
         <requirement type="package" version="1.20.0">bioconductor-reactomegsa</requirement>
         <requirement type="package" version="1.20.0">bioconductor-reactomegsa.data</requirement>
-        <requirement type="package" version="1.20.0">r-optparse</requirement>
+        <requirement type="package" version="1">r-optparse</requirement>
     </requirements>
 
     <stdio>
         <exit_code range="1:" level="fatal" description="Tool failed with a non-zero exit code."/>
         <regex match="Error:" level="fatal" description="Tool encountered an error."/>
     </stdio>
-    
+
     <command><![CDATA[
 
 Rscript ${__tool_directory__}/reactome_analysis.R --method Camera --name GSE1297 -o '$pathways' 2>&1
