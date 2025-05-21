@@ -24,11 +24,48 @@ Rscript ${__tool_directory__}/reactome_analysis.R
   --pathways_output_file='$pathways'
   --comparison_factor='$comparison_factor'
   --reference_group='$reference_group'
-  --comparison_group='$comparison_group' 2>&1
-
+  --comparison_group='$comparison_group'
+  #if $analysis_method == "PADOG":
+    --sample_groups='$sample_groups'
+    --discrete_normalisation_function='$discrete_normalisation_function'
+    --continuous_normalisation_function='$continuous_normalisation_function'
+  #elif $analysis_method == "Camera":
+    --discrete_normalisation_function='$discrete_normalisation_function'
+    --continuous_normalisation_function='$continuous_normalisation_function'
+  #elif $analysis_method == "ssGSEA":
+    --pathways_to_include='$pathways_to_include'
+    --min_pathway_size='$min_pathway_size'
+    --max_pathway_size='$max_pathway_size'
+  #else:
+    echo "Unknown analysis method: $analysis_method"
+    exit 1
+  #end if
 ]]></command>
 
     <inputs>
+
+        <param name="dataset" type="data" format="txt" label="Dataset"
+               help="The dataset to be used for the analysis. The dataset must be a tabular file with the first column
+                       containing the gene/protein identifiers and the remaining columns containing the expression values. The
+                       first row should contain the sample names. The file should be tab-separated or comma-separated."
+               optional="false"/>
+
+        <param name="data_type" type="select" label="Data type"
+               help="The type of data to be used for the analysis. The options are RNA-seq, Proteomics, or both."
+               value="RNA-seq" multiple="false">
+            <option value="rnaseq_counts">RNA-seq (raw counts)</option>
+            <option value="rnaseq_norm">RNA-seq (normalized)</option>
+            <option value="proteomics_int">Proteomics (intensity)</option>
+            <option value="proteomics_sc">Proteomics (spectral counts)</option>
+            <option value="microarray_norm">Microarray (normalized)</option>
+        </param>
+
+        <param name="annotation" type="data" format="txt" label="Annotations"
+               help="The annotation file should be a tabular file with the first column containing the sample names,
+                       one of the other columns containing the sample group information (reference/comparison) and the
+                       remaining columns containing any additional sample properties. The first row should contain the annotation names.
+                       The file should be tab-separated or comma-separated." optional="false"/>
+
         <conditional name="analysis_method_selector">
             <param name="analysis_method" type="select" label="Select analysis method">
                 <option value="PADOG" selected="true">PADOG</option>
@@ -37,42 +74,6 @@ Rscript ${__tool_directory__}/reactome_analysis.R
             </param>
 
             <when value="PADOG">
-
-                <param name="dataset" type="data" format="txt" label="Dataset"
-                       help="The dataset to be used for the analysis. The dataset must be a tabular file with the first column
-                       containing the gene/protein identifiers and the remaining columns containing the expression values. The
-                       first row should contain the sample names. The file should be tab-separated or comma-separated."
-                       optional="false"/>
-
-                <param name="data_type" type="select" label="Data type"
-                       help="The type of data to be used for the analysis. The options are RNA-seq, Proteomics, or both."
-                       value="RNA-seq" multiple="false">
-                    <option value="rnaseq_counts">RNA-seq (raw counts)</option>
-                    <option value="rnaseq_norm">RNA-seq (normalized)</option>
-                    <option value="proteomics_int">Proteomics (intensity)</option>
-                    <option value="proteomics_sc">Proteomics (spectral counts)</option>
-                    <option value="microarray_norm">Microarray (normalized)</option>
-                </param>
-
-                <param name="annotation" type="data" format="txt" label="Annotations"
-                       help="The annotation file should be a tabular file with the first column containing the sample names,
-                       one of the other columns containing the sample group information (reference/comparison) and the
-                       remaining columns containing any additional sample properties. The first row should contain the annotation names.
-                       The file should be tab-separated or comma-separated." optional="false"/>
-
-                <param name="use_interactors" type="boolean" label="Use interactors"
-                       help="Indicates whether interactors from IntAct should be used to extend REACTOME's pathways in the analysis"
-                       checked="false"/>
-
-                <param name="include_disease_pathways" type="boolean" label="Include disease pathways"
-                       help="Disease pathways in Reactome may lead to a skewed analysis result"
-                       checked="true"/>
-
-                <param name="max_missing_values" type="float" label="Max missing values"
-                       help="The maximum (relative) number of missing values withing one comparison group before a gene/protein is
-                       removed form the analysis. If no comparison groups are defined, the number of missing values across all samples
-                       is sued. Must be between 0-1"
-                       value="0.5"/>
 
                 <param name="sample_groups" type="text" label="Sample groups"
                        help="Specifies the sample property name that holds the sample group information. This parameter should be
@@ -99,41 +100,79 @@ Rscript ${__tool_directory__}/reactome_analysis.R
                     <option value="cyclicloess">cyclicloess</option>
                 </param>
 
-                <param name="comparison_factor" type="text" label="Comparison factor"
-                       help="Comparison factor is the column from your annotation distinguishing the 2 groups to compare,
-                       the reference and the comparison group."
-                       optional="false"/>
-
-                <param name="reference_group" type="text" label="Reference group"
-                       help="The baseline gorup against which other groups are compared. It usually represents the
-                       standard or default condition."
-                       optional="false"/>
-
-                <param name="comparison_group" type="text" label="Comparison group"
-                       help="The group being compared to the reference group to assess differences or effects."
-                       optional="false"/>
-
-                <param name="covariates" type="text" label="Covariates"
-                       help="Comma separated list of variables that may influence the outcome but are not the main variable of interest.
-                       These are included inthe statistical models to adjust for effects and improve accuracy."
-                       optional="true"/>
             </when>
 
             <when value="Camera">
-                <param name="dataset" type="select" label="select a dataset:">
-                    <option value="GSE1297">GSE1297</option>
-                    <option value="TODO_MORE">TODO more</option>
+                <param name="discrete_normalisation_function" type="select" label="Discrete normalisation function"
+                       help="The normalisation function to use for raw RNA-seq read counts and raw Proteomics
+                       spectral counts"
+                       value="tmm" multiple="false">
+                    <option value="tmm">TMM</option>
+                    <option value="rle">RLE</option>
+                    <option value="upperquartile">upperquartile</option>
+                    <option value="none">none</option>
+                </param>
+
+                <param name="continuous_normalisation_function" type="select" label="Continuous normalisation function"
+                       help="The normalisation function to use proteomics intensity data. Note that it is generally advised that
+                       normalisation is performed on the PSM or peptide level and not on the protein level."
+                       value="none" multiple="false">
+                    <option value="none">none</option>
+                    <option value="scale">scale</option>
+                    <option value="quantile">quantile</option>
+                    <option value="cyclicloess">cyclicloess</option>
                 </param>
             </when>
 
             <when value="ssGSEA">
-                <param name="dataset" type="select" label="select a dataset:">
-                    <option value="GSE1297">GSE1297</option>
-                    <option value="TODO_MORE">TODO more</option>
-                </param>
+                <param name="pathways_to_include" type="text" label="Pathways" help="A comma delimited list of pathways to
+                    include in the analysis. All other pathways will be ignored."/>
+
+                <param name="min_pathway_size" type="integer" label="Minimum pathway size"
+                       help="The minimum pathway size (determined as the number of submitted gnes mapped to that pathway)
+                       to include a pathway in the analysis."
+                       value="1"/>
+
+                <param name="max_pathway_size" type="integer" label="Maximum pathway size"
+                       help="The maximum pathway size (determined as the number of submitted gnes mapped to that pathway)
+                       to include a pathway in the analysis."
+                       value="1000"/>
             </when>
 
         </conditional>
+
+        <param name="use_interactors" type="boolean" label="Use interactors"
+               help="Indicates whether interactors from IntAct should be used to extend REACTOME's pathways in the analysis"
+               checked="false"/>
+
+        <param name="include_disease_pathways" type="boolean" label="Include disease pathways"
+               help="Disease pathways in Reactome may lead to a skewed analysis result"
+               checked="true"/>
+
+        <param name="max_missing_values" type="float" label="Max missing values"
+               help="The maximum (relative) number of missing values withing one comparison group before a gene/protein is
+                       removed form the analysis. If no comparison groups are defined, the number of missing values across all samples
+                       is sued. Must be between 0-1"
+               value="0.5"/>
+
+        <param name="comparison_factor" type="text" label="Comparison factor"
+               help="Comparison factor is the column from your annotation distinguishing the 2 groups to compare,
+                       the reference and the comparison group."
+               optional="false"/>
+
+        <param name="reference_group" type="text" label="Reference group"
+               help="The baseline gorup against which other groups are compared. It usually represents the
+                       standard or default condition."
+               optional="false"/>
+
+        <param name="comparison_group" type="text" label="Comparison group"
+               help="The group being compared to the reference group to assess differences or effects."
+               optional="false"/>
+
+        <param name="covariates" type="text" label="Covariates"
+               help="Comma separated list of variables that may influence the outcome but are not the main variable of interest.
+                       These are included inthe statistical models to adjust for effects and improve accuracy."
+               optional="true"/>
 
     </inputs>
 

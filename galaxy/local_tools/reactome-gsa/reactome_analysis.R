@@ -34,7 +34,7 @@ option_list <- list(
   make_option(c("--max_missing_values"), type = "numeric", default = 0.5,
               help = "Maximum (relative) number of missing values within one comparison group (0-1)."),
 
-  make_option(c("--sample_groups"), type = "character", default = "",  # Not default NULL or it will explode
+  make_option(c("--sample_groups"), type = "character", default = "",
               help = "Sample property name holding sample group information for matched-pair analysis."),
 
   make_option(c("--discrete_normalisation_function"), type = "character", default = "TMM",
@@ -55,7 +55,16 @@ option_list <- list(
               help = "The group being compared to the reference group."),
 
   make_option(c("--covariates"), type = "character", default = NULL,
-              help = "Comma-separated list of variables (column names from annotation) to include as covariates.")
+              help = "Comma-separated list of variables (column names from annotation) to include as covariates."),
+
+  make_option(c("--pathways_to_include"), type = "character", default = "",
+              help = "Comma-separated list of pathways to include in the analysis. If not provided, all pathways will be included."),
+
+  make_option(c("--min_pathway_size"), type = "integer", default = NULL,
+              help = "Minimum pathway size to include in the analysis."),
+
+  make_option(c("--max_pathway_size"), type = "integer", default = NULL,
+              help = "Maximum pathway size to include in the analysis.")
 )
 
 opt_parser <- OptionParser(option_list = option_list)
@@ -129,18 +138,51 @@ if (!is.null(opt$covariates) && nchar(opt$covariates) > 0) {
   additional_factors_vector <- additional_factors_vector[additional_factors_vector != ""]
 }
 
-request <- add_dataset(request = request,
-                       expression_values = dataset,
-                       name = opt$name,
-                       type = opt$data_type,
-                       sample_data = annotations,
-                       comparison_factor = opt$comparison_factor,
-                       comparison_group_1 = opt$reference_group,
-                       comparison_group_2 = opt$comparison_group,
-                       additional_factors = additional_factors_vector,
-                       sample_groups = opt$sample_groups,
-                       normalisation_method = normalisation_function
-                       )
+if (opt$method == "PADOG") {
+    request <- add_dataset(request = request,
+                           expression_values = dataset,
+                           name = opt$name,
+                           type = opt$data_type,
+                           sample_data = annotations,
+                           comparison_factor = opt$comparison_factor,
+                           comparison_group_1 = opt$reference_group,
+                           comparison_group_2 = opt$comparison_group,
+                           additional_factors = additional_factors_vector,
+                           sample_groups = opt$sample_groups,
+                           normalisation_method = normalisation_function
+    )
+} else if (opt$method == "Camera") {
+    request <- add_dataset(request = request,
+                           expression_values = dataset,
+                           name = opt$name,
+                           type = opt$data_type,
+                           sample_data = annotations,
+                           comparison_factor = opt$comparison_factor,
+                           comparison_group_1 = opt$reference_group,
+                           comparison_group_2 = opt$comparison_group,
+                           additional_factors = additional_factors_vector,
+                           normalisation_method = normalisation_function
+    )
+} else if (opt$method == "ssGSEA") {
+    request <- add_dataset(request = request,
+                           expression_values = dataset,
+                           name = opt$name,
+                           type = opt$data_type,
+                           sample_data = annotations,
+                           comparison_factor = opt$comparison_factor,
+                           comparison_group_1 = opt$reference_group,
+                           comparison_group_2 = opt$comparison_group,
+                           additional_factors = additional_factors_vector,
+                           pathways_to_include = opt$pathways_to_include,
+                           min_pathway_size = opt$min_pathway_size,
+                           max_pathway_size = opt$max_pathway_size
+    )
+} else {
+    stop("Error: Invalid method. Please provide a valid value for --method.")
+}
+
+cat("Prepared request for Reactome analysis:\n")
+str(request)
 
 cat("Performing Reactome GSA analysis...\n")
 result <- perform_reactome_analysis(request = request, compress = FALSE)
