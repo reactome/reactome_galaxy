@@ -6,9 +6,11 @@ library(ReactomeGSA)
 option_list <- list(
   make_option(c("-m", "--method"), type = "character", default = "PADOG",
               help = "Analysis method (e.g. PADOG, Camera, ssGSEA) [default %default]"),
+
   make_option(c("-n", "--name"), type = "character", default = "Analysis_Dataset",
               help = "Dataset name for the analysis output [default %default]"),
-  make_option(c("-o", "--pathways_output_file"), type = "character", default = "pathways_output.csv",
+
+  make_option(c("-o", "--pathways_output_file"), type = "character", default = "pathways.csv",
               help = "Output file name for pathways data [default %default]"),
 
   make_option(c("--dataset"), type = "character",
@@ -18,6 +20,7 @@ option_list <- list(
   make_option(c("--data_type"), type = "character",
                 help = "Type of dataset (rnaseq_counts, rnaseq_norm, proteomics_int, proteomics_sc, microarray_norm).",
                 default = NULL),
+
   make_option(c("--annotation"), type = "character",
               help = "Path to the tabular annotation file (sample names in first column, sample group info in others).",
               default = NULL),
