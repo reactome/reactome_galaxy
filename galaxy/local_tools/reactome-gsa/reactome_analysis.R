@@ -58,18 +58,6 @@ option_list <- list(
 opt_parser <- OptionParser(option_list = option_list)
 opt <- parse_args(opt_parser)
 
-
-detect_separator <- function(file_path) {
-  first_line <- readLines(file_path, n = 1)
-  if (grepl("\t", first_line)) {
-    return("tsv")
-  } else if (grepl(",", first_line)) {
-    return("csv")
-  } else {
-    stop("Error: Could not determine separator for file '", file_path, "'. Please ensure it's tab-separated or comma-separated.")
-  }
-}
-
 if (is.null(opt$dataset) || !file.exists(opt$dataset)) {
   stop("Error: Dataset file is required and must exist. Please provide a valid path to --dataset.")
 }
@@ -94,7 +82,6 @@ if (is.null(opt$data_type)) {
   stop("Error: Dataset type is required. Please provide a value for --data_type.")
 }
 
-# load v2
 detect_separator_and_load <- function(fn, header = TRUE, stringsAsFactors = FALSE) {
   first_line <- readLines(fn, n = 1)
   sep <- ifelse(grepl("\t", first_line), "\t", ",")
