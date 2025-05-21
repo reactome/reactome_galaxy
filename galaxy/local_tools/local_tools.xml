@@ -2,5 +2,6 @@
 <toolbox monitor="true">
     <section name="Local Tools" id="local_tools">
         <tool file="/local_tools/reactome/reactome.xml"/>
+        <tool file="/local_tools/reactome-gsa/reactome-gsa.xml"/>
     </section>
 </toolbox>
