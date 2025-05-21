@@ -1,0 +1,6 @@
+categories: ["Proteomics"]
+description: Official Reactome CLI tools used to query the reactome.org web api and run Reactome GSA tools.
+name: reactome_cli
+owner: paul_wolfe
+homepage_url: http://reactome.org
+remote_repository_url: https://github.com/reactome/reactome_galaxy
