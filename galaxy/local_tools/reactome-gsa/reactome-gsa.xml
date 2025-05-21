@@ -14,13 +14,23 @@
 
     <command><![CDATA[
 
-Rscript ${__tool_directory__}/reactome_analysis.R --method Camera --name GSE1297 -o '$pathways' 2>&1
+Rscript ${__tool_directory__}/reactome_analysis.R
+  --dataset '$dataset'
+  --data_type '$data_type'
+  --annotation '$annotation'
+  --method='$analysis_method'
+  --use_interactors='$use_interactors'
+  --include_disease_pathways='$include_disease_pathways'
+  --pathways_output_file='$pathways'
+  --comparison_factor='$comparison_factor'
+  --reference_group='$reference_group'
+  --comparison_group='$comparison_group' 2>&1
 
 ]]></command>
 
     <inputs>
-        <conditional name="analysis_type_selector">
-            <param name="analysis_type" type="select" label="Select analysis type">
+        <conditional name="analysis_method_selector">
+            <param name="analysis_method" type="select" label="Select analysis method">
                 <option value="PADOG" selected="true">PADOG</option>
                 <option value="Camera">Camera</option>
                 <option value="ssGSEA">ssGSEA</option>
@@ -28,13 +38,85 @@ Rscript ${__tool_directory__}/reactome_analysis.R --method Camera --name GSE1297
 
             <when value="PADOG">
 
-                <param name="project_to_human" type="boolean" label="Project to Human?"
-                       help="All non-human identifiers are converted to their human equivalents"
+                <param name="dataset" type="data" format="txt" label="Dataset"
+                       help="The dataset to be used for the analysis. The dataset must be a tabular file with the first column
+                       containing the gene/protein identifiers and the remaining columns containing the expression values. The
+                       first row should contain the sample names. The file should be tab-separated or comma-separated."
+                       optional="false"/>
+
+                <param name="data_type" type="select" label="Data type"
+                       help="The type of data to be used for the analysis. The options are RNA-seq, Proteomics, or both."
+                       value="RNA-seq" multiple="false">
+                    <option value="rnaseq_counts">RNA-seq (raw counts)</option>
+                    <option value="rnaseq_norm">RNA-seq (normalized)</option>
+                    <option value="proteomics_int">Proteomics (intensity)</option>
+                    <option value="proteomics_sc">Proteomics (spectral counts)</option>
+                    <option value="microarray_norm">Microarray (normalized)</option>
+                </param>
+
+                <param name="annotation" type="data" format="txt" label="Annotations"
+                       help="The annotation file should be a tabular file with the first column containing the sample names,
+                       one of the other columns containing the sample group information (reference/comparison) and the
+                       remaining columns containing any additional sample properties. The first row should contain the annotation names.
+                       The file should be tab-separated or comma-separated." optional="false"/>
+
+                <param name="use_interactors" type="boolean" label="Use interactors"
+                       help="Indicates whether interactors from IntAct should be used to extend REACTOME's pathways in the analysis"
+                       checked="false"/>
+
+                <param name="include_disease_pathways" type="boolean" label="Include disease pathways"
+                       help="Disease pathways in Reactome may lead to a skewed analysis result"
                        checked="true"/>
 
-                <param name="include_interactors" type="boolean" label="Include Interactors?"
-                       help="IntAct interactors are used to increase the analysis background"
-                       checked="false"/>
+                <param name="max_missing_values" type="float" label="Max missing values"
+                       help="The maximum (relative) number of missing values withing one comparison group before a gene/protein is
+                       removed form the analysis. If no comparison groups are defined, the number of missing values across all samples
+                       is sued. Must be between 0-1"
+                       value="0.5"/>
+
+                <param name="sample_groups" type="text" label="Sample groups"
+                       help="Specifies the sample property name that holds the sample group information. This parameter should be
+                       used for matched-pair analysis. If used, every sample must occur exactly twice, once for each of the analysis
+                       groups"/>
+
+                <param name="discrete_normalisation_function" type="select" label="Discrete normalisation function"
+                       help="The normalisation function to use for raw RNA-seq read counts and raw Proteomics
+                       spectral counts"
+                       value="tmm" multiple="false">
+                    <option value="tmm">TMM</option>
+                    <option value="rle">RLE</option>
+                    <option value="upperquartile">upperquartile</option>
+                    <option value="none">none</option>
+                </param>
+
+                <param name="continuous_normalisation_function" type="select" label="Continuous normalisation function"
+                       help="The normalisation function to use proteomics intensity data. Note that it is generally advised that
+                       normalisation is performed on the PSM or peptide level and not on the protein level."
+                       value="none" multiple="false">
+                    <option value="none">none</option>
+                    <option value="scale">scale</option>
+                    <option value="quantile">quantile</option>
+                    <option value="cyclicloess">cyclicloess</option>
+                </param>
+
+                <param name="comparison_factor" type="text" label="Comparison factor"
+                       help="Comparison factor is the column from your annotation distinguishing the 2 groups to compare,
+                       the reference and the comparison group."
+                       optional="false"/>
+
+                <param name="reference_group" type="text" label="Reference group"
+                       help="The baseline gorup against which other groups are compared. It usually represents the
+                       standard or default condition."
+                       optional="false"/>
+
+                <param name="comparison_group" type="text" label="Comparison group"
+                       help="The group being compared to the reference group to assess differences or effects."
+                       optional="false"/>
+
+                <param name="covariates" type="text" label="Covariates"
+                       help="Comma separated list of variables that may influence the outcome but are not the main variable of interest.
+                       These are included inthe statistical models to adjust for effects and improve accuracy."
+                       optional="true"/>
             </when>
 
             <when value="Camera">
@@ -53,36 +135,10 @@ Rscript ${__tool_directory__}/reactome_analysis.R --method Camera --name GSE1297
 
         </conditional>
 
-        <param name="generate_pdf" type="boolean" label="Generate PDF Report?" help="Select if a PDF report should be generated"
-               checked="false"/>
-        <param name="generate_entities_found" type="boolean" label="Generate Entities Found Output?"
-               help="Select if an Entities Found output should be generated" checked="false"/>
-        <param name="generate_entities_not_found" type="boolean" label="Generate Entities Not Found Output?"
-               help="Select if an Entities Not Found output should be generated" checked="false"/>
-        <param name="generate_html_report" type="boolean" label="Generate HTML Report?" help="Select if an HTML report should be generated"
-               checked="false"/>
-        <param name="generate_json_report" type="boolean" label="Generate JSON Report?" help="Select if an JOSN report should be generated"
-               checked="false"/>
-
     </inputs>
 
     <outputs>
         <data format="csv" name="pathways" label="Pathways"/>
-        <data format="csv" name="entities_found" label="Entities Found">
-            <filter>generate_entities_found</filter>
-        </data>
-        <data format="csv" name="entities_not_found" label="Entities Not Found">
-            <filter>generate_entities_not_found</filter>
-        </data>
-        <data format="json" name="result_json" label="Json result">
-            <filter>generate_json_report</filter>
-        </data>
-        <data format="pdf" name="pdf_report" label="PDF report">
-            <filter>generate_pdf</filter>
-        </data>
-        <data format="html" name="html_report" label="Reactome Pathway Links">
-            <filter>generate_html_report</filter>
-        </data>
     </outputs>
 
     <help><![CDATA[
