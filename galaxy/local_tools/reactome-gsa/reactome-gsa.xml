@@ -1,4 +1,4 @@
-<tool id="reactome" name="Reactome GSA Analysis" version="0.0.0">
+<tool id="reactome_gsa" name="Reactome GSA Analysis" version="0.0.0">
     <description>Perform a ReactomeGSA analysis</description>
 
     <requirements>
