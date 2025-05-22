@@ -127,6 +127,7 @@ cat("Successfully loaded annotation from:", opt$annotation, "\n")
 request <- ReactomeAnalysisRequest(method = opt$method)
 
 request <- set_parameters(request = request,
+                          create_reports = TRUE,
                           max_missing_values = opt$max_missing_values,
                           use_interactors = opt$use_interactors,
                           include_disease_pathways = opt$include_disease_pathways)
@@ -187,6 +188,8 @@ str(request)
 cat("Performing Reactome GSA analysis...\n")
 result <- perform_reactome_analysis(request = request, compress = FALSE)
 cat("Analysis complete.\n")
+
+links = reactome_links(result)
 
 pathways <- get_result(result, type = "pathways", name = opt$name)
 write.csv(pathways, file = opt$pathways_output_file, row.names = FALSE)
