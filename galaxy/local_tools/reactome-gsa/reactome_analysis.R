@@ -26,6 +26,9 @@ option_list <- list(
   make_option(c("--json_output_file"), type = "character", default = "result.json",
               help = "Output file name for the analysis results json file [default %default]"),
 
+  make_option(c("--excel_output_file"), type = "character", default = "reactome_analysis.xlsx",
+              help = "Output file name for the Excel report [default %default]"),
+
   make_option(c("--dataset"), type = "character",
               help = "Path to the tabular dataset file (gene/protein identifiers in first column, expression values in others).",
               default = NULL),
@@ -202,40 +205,129 @@ cat("Performing Reactome GSA analysis...\n")
 result <- perform_reactome_analysis(request = request, compress = FALSE)
 cat("Analysis complete.\n")
 
+# need to be consistent with the ReactomeGSA
+reactome_gsa_url <- "https://gsa.reactome.org"
+reactome_gsa_version <- "0.1"
+
+get_reactome_analysis_report_status <- function(analysis_id) {
+  report_status_url = paste(c(reactome_gsa_url, reactome_gsa_version, "report_status", analysis_id), collapse="/")
+  status_obj <- tryCatch(
+    jsonlite::fromJSON(report_status_url),
+    error = function(e) list(completed = 0, description = "Unknown", status = "running")
+  )
+
+  return(status_obj)
+}
+
+poll_until_complete <- function(
+  status_fn,           # function(analysis_id, reactome_url) -> list(status, description, completed, ...)
+  analysis_id,
+  on_progress = NULL,  # function(completed, description)
+  max_errors = 10,
+  sleep_time = 1
+) {
+  completed <- status_fn(analysis_id)
+  error_count <- 0
+
+  is_done <- FALSE
+  last_message <- completed[["description"]]
+
+  if (!is.null(on_progress)) {
+    on_progress(completed[["completed"]], completed[["description"]])
+  }
+
+  while (completed[["status"]] == "running") {
+    Sys.sleep(sleep_time)
+    completed <- tryCatch({
+      status_fn(analysis_id)
+    }, error = function(cond) {
+      if (error_count < max_errors) {
+        error_count <<- error_count + 1
+        return(completed) # return last known completed status
+      }
+      stop("Error: Failed to connect to ReactomeGSA. Please contact support if this error persists at help@reactome.org", call. = FALSE)
+    })
+
+    if (!is.null(on_progress)) {
+      if (completed[["description"]] != last_message && completed[["status"]] == "running" && !is_done) {
+        on_progress(completed[["completed"]], completed[["description"]])
+        last_message <- completed[["description"]]
+      } else if (!is_done) {
+        on_progress(completed[["completed"]], last_message)
+      }
+      if (as.numeric(completed[["completed"]]) == 1) {
+        is_done <- TRUE
+      }
+    }
+  }
+  completed
+}
+
+analysis_id <- start_reactome_analysis(request = request)
+
+completed_status <- poll_until_complete(
+  status_fn = get_reactome_analysis_status,
+  analysis_id = analysis_id,
+  on_progress = function(completed, description) {
+  cat(sprintf("Progress: %d%% - %s\n", completed * 100, description))
+  })
+
+if (completed_status[["status"]] == "failed") {
+    if (verbose) warning("Reactome Analysis failed: ", completed[["description"]])
+    return(NULL)
+}
+
+report_completed_status <- poll_until_complete(
+  status_fn = get_reactome_analysis_report_status,
+  analysis_id = analysis_id,
+  on_progress = function(completed, description) {
+    cat(sprintf("Report Progress: %d%% - %s\n", completed * 100, description))
+  })
+
+if (report_completed_status[["status"]] == "failed") {
+    if (verbose) warning("Reactome Report generation failed: ", report_completed_status[["description"]])
+    return(NULL)
+}
+
+result <- get_reactome_analysis_result(analysis_id = analysis_id)
+
+gsa_reports = report_completed_status$reports
+excel_url <- gsa_reports$url[gsa_reports$name == "MS Excel Report (xlsx)"]
+pdf_url <- gsa_reports$url[gsa_reports$name == "PDF Report"]
+
 cat("Reactome analysis results:\n")
 links = reactome_links(result, print_result=TRUE, return_result=TRUE)
 gsas_link <- Filter(function(x) x["name"] == "Gene Set Analysis Summary", links)[[1]]
 full_url  <- gsas_link["url"]
-base_url <- sub("^(https?://[^/]+).*$", "\\1", full_url)
+base_url <- as.character(sub("^(https?://[^/]+).*$", "\\1", full_url))
 token_enc <- sub(".*ANALYSIS=([^&]+).*", "\\1", full_url)
 token <- URLdecode(token_enc)
-analysis_url <- paste0(base_url, "/AnalysisService")
 resource <- "TOTAL" # or "UNIPROT"
 analysis_service = "AnalysisService"
 species <- "Homo%20sapiens"
 
 jobs <- list(
-  list(path = c(base_url, analysis_service, "download", token_enc, "pathways", resource, "pathways.csv"),
+  list(url = paste(c(base_url, analysis_service, "download", token, "pathways", resource, "pathways.csv"), collapse = "/"),
        dest = opt$pathways_output_file),
 
-  list(path = c(base_url, analysis_service, "download", token_enc, "entities", "found", resource, "entities_found.csv"),
+  list(url = paste(c(base_url, analysis_service, "download", token, "entities", "found", resource, "entities_found.csv"), collapse = "/"),
        dest = opt$entities_found_output_file),
 
-  list(path = c(base_url, analysis_service, "download", token_enc, "entities", "notfound",  "entities_not_found.csv"),
+  list(url = paste(c(base_url, analysis_service, "download", token, "entities", "notfound",  "entities_not_found.csv"), collapse = "/"),
        dest = opt$entities_not_found_output_file),
 
-  list(path = c(base_url, analysis_service, "download", token_enc, "result.json"),
+  list(url = paste(c(base_url, analysis_service, "download", token, "result.json"), collapse = "/"),
        dest = opt$json_output_file),
 
-  list(path = c(base_url, analysis_service, "report", token_enc, species, "report.pdf"),
-       dest = opt$pdf_output_file)
+  list(url = pdf_url, dest = opt$pdf_output_file),
 
-  # how do we get the excel report? it uses a different endpoint and token.
-  # there's also a second report pdf at this other endpoint
+  list(url = excel_url, dest = opt$excel_output_file)
 )
 
+cat(paste(jobs))
+
 for (job in jobs) {
-  url  <- paste(job$path, collapse = "/")
+  url  <- job$url
   cat(url, "\n")
   resp <- GET(url, write_disk(job$dest, overwrite = TRUE))
   stop_for_status(resp)
