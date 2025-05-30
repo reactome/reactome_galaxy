@@ -1,6 +1,7 @@
 #!/usr/bin/env Rscript
 
 library(optparse)
+library(httr)
 library(ReactomeGSA)
 
 option_list <- list(
@@ -189,8 +190,28 @@ cat("Performing Reactome GSA analysis...\n")
 result <- perform_reactome_analysis(request = request, compress = FALSE)
 cat("Analysis complete.\n")
 
-links = reactome_links(result)
-
 pathways <- get_result(result, type = "pathways", name = opt$name)
 write.csv(pathways, file = opt$pathways_output_file, row.names = FALSE)
 cat("Pathways data successfully written to:", opt$pathways_output_file, "\n")
+
+cat("Reactome analysis results:\n")
+links = reactome_links(result, print_result=TRUE, return_result=TRUE)
+gsas_link <- Filter(function(x) x["name"] == "Gene Set Analysis Summary", links)[[1]]
+full_url  <- gsas_link["url"]
+base_url <- sub("^(https?://[^/]+).*$", "\\1", full_url)
+token_enc <- sub(".*ANALYSIS=([^&]+).*", "\\1", full_url)
+token <- URLdecode(token_enc)
+analysis_url <- paste0(base_url, "/AnalysisService")
+resource <- "TOTAL" # or "UNIPROT"
+destfile <- "/tmp/pathways_report.csv" # wherever you want it saved
+download_url <- paste0(
+  analysis_url,
+  "/download/", token_enc,
+  "/pathways/", resource,
+  "/pathways.csv"
+)
+resp <- GET(download_url, write_disk(destfile, overwrite = TRUE))
+stop_for_status(resp)
+cat("Downloaded pathways report to: ", normalizePath(destfile))
+
+cat("Reactome analysis completed successfully.\n")

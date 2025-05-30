@@ -5,6 +5,7 @@
         <requirement type="package" version="1.20.0">bioconductor-reactomegsa</requirement>
         <requirement type="package" version="1.20.0">bioconductor-reactomegsa.data</requirement>
         <requirement type="package" version="1">r-optparse</requirement>
+        <requirement type="package" version="1">r-httr</requirement>
     </requirements>
 
     <stdio>
