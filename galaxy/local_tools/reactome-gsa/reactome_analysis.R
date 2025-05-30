@@ -14,6 +14,18 @@ option_list <- list(
   make_option(c("-o", "--pathways_output_file"), type = "character", default = "pathways.csv",
               help = "Output file name for pathways data [default %default]"),
 
+  make_option(c("--entities_found_output_file"), type = "character", default = "entities_found.csv",
+              help = "Output file name for found entities data [default %default]"),
+
+  make_option(c("--entities_not_found_output_file"), type = "character", default = "entities_not_found.csv",
+              help = "Output file name for not found entities data [default %default]"),
+
+  make_option(c("--pdf_output_file"), type = "character", default = "report.pdf",
+              help = "Output file name for the pdf report [default %default]"),
+
+  make_option(c("--json_output_file"), type = "character", default = "result.json",
+              help = "Output file name for the analysis results json file [default %default]"),
+
   make_option(c("--dataset"), type = "character",
               help = "Path to the tabular dataset file (gene/protein identifiers in first column, expression values in others).",
               default = NULL),
@@ -190,10 +202,6 @@ cat("Performing Reactome GSA analysis...\n")
 result <- perform_reactome_analysis(request = request, compress = FALSE)
 cat("Analysis complete.\n")
 
-pathways <- get_result(result, type = "pathways", name = opt$name)
-write.csv(pathways, file = opt$pathways_output_file, row.names = FALSE)
-cat("Pathways data successfully written to:", opt$pathways_output_file, "\n")
-
 cat("Reactome analysis results:\n")
 links = reactome_links(result, print_result=TRUE, return_result=TRUE)
 gsas_link <- Filter(function(x) x["name"] == "Gene Set Analysis Summary", links)[[1]]
@@ -203,15 +211,35 @@ token_enc <- sub(".*ANALYSIS=([^&]+).*", "\\1", full_url)
 token <- URLdecode(token_enc)
 analysis_url <- paste0(base_url, "/AnalysisService")
 resource <- "TOTAL" # or "UNIPROT"
-destfile <- "/tmp/pathways_report.csv" # wherever you want it saved
-download_url <- paste0(
-  analysis_url,
-  "/download/", token_enc,
-  "/pathways/", resource,
-  "/pathways.csv"
+analysis_service = "AnalysisService"
+species <- "Homo%20sapiens"
+
+jobs <- list(
+  list(path = c(base_url, analysis_service, "download", token_enc, "pathways", resource, "pathways.csv"),
+       dest = opt$pathways_output_file),
+
+  list(path = c(base_url, analysis_service, "download", token_enc, "entities", "found", resource, "entities_found.csv"),
+       dest = opt$entities_found_output_file),
+
+  list(path = c(base_url, analysis_service, "download", token_enc, "entities", "notfound",  "entities_not_found.csv"),
+       dest = opt$entities_not_found_output_file),
+
+  list(path = c(base_url, analysis_service, "download", token_enc, "result.json"),
+       dest = opt$json_output_file),
+
+  list(path = c(base_url, analysis_service, "report", token_enc, species, "report.pdf"),
+       dest = opt$pdf_output_file)
+
+  # how do we get the excel report? it uses a different endpoint and token.
+  # there's also a second report pdf at this other endpoint
 )
-resp <- GET(download_url, write_disk(destfile, overwrite = TRUE))
-stop_for_status(resp)
-cat("Downloaded pathways report to: ", normalizePath(destfile))
+
+for (job in jobs) {
+  url  <- paste(job$path, collapse = "/")
+  cat(url, "\n")
+  resp <- GET(url, write_disk(job$dest, overwrite = TRUE))
+  stop_for_status(resp)
+  cat("Downloaded ", job$dest, "\n")
+}
 
 cat("Reactome analysis completed successfully.\n")

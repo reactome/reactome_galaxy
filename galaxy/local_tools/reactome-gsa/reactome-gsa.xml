@@ -23,6 +23,10 @@ Rscript ${__tool_directory__}/reactome_analysis.R
   --use_interactors='$use_interactors'
   --include_disease_pathways='$include_disease_pathways'
   --pathways_output_file='$pathways'
+  --entities_found_output_file='$entities_found'
+  --entities_not_found_output_file='$entities_not_found'
+  --pdf_output_file='$pdf_output'
+  --json_output_file='$json_output'
   --comparison_factor='$comparison_factor'
   --reference_group='$reference_group'
   --comparison_group='$comparison_group'
@@ -180,6 +184,10 @@ Rscript ${__tool_directory__}/reactome_analysis.R
 
     <outputs>
         <data format="csv" name="pathways" label="Pathways"/>
+        <data format="csv" name="entities_found" label="Entities found"/>
+        <data format="csv" name="entities_not_found" label="Entities not found"/>
+        <data format="pdf" name="pdf_output" label="PDF Output"/>
+        <data format="json" name="json_output" label="JSON Output"/>
     </outputs>
 
     <help><![CDATA[
