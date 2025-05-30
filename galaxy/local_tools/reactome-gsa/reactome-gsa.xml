@@ -12,6 +12,8 @@
         <regex match="Error:" level="fatal" description="Tool encountered an error."/>
     </stdio>
 
+    <code file="options.py" />
+
     <command><![CDATA[
 
 Rscript ${__tool_directory__}/reactome_analysis.R
@@ -156,15 +158,22 @@ Rscript ${__tool_directory__}/reactome_analysis.R
                is used. Must be between 0-1"
                value="0.5"/>
 
-        <param name="comparison_factor" type="text" label="Comparison factor"
+        <param name="comparison_factor" type="select" label="Comparison factor"
                help="Comparison factor is the column from your annotation distinguishing the 2 groups to compare,
                the reference and the comparison group."
-               optional="false"/>
+               optional="false"
+               refresh_on_change="true">
+            <options>
+                <filter type="data_meta" ref="annotation" key="column_names"/>
+            </options>
+        </param>
 
-        <param name="reference_group" type="text" label="Reference group"
+        <param name="reference_group" type="select" label="Reference group"
                help="The baseline group against which other groups are compared. It usually represents the
                standard or default condition."
-               optional="false"/>
+               optional="false"
+               refresh_on_change="true"
+               dynamic_options="get_distinct_values(annotation, column_name=comparison_factor)"/>
 
         <param name="comparison_group" type="text" label="Comparison group"
                help="The group being compared to the reference group to assess differences or effects."
