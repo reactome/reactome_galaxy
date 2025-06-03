@@ -203,6 +203,25 @@ Rscript ${__tool_directory__}/reactome_analysis.R
         <data format="xlsx" name="excel_output" label="Excel Output"/>
     </outputs>
 
+    <tests>
+        <test>
+            <param name="dataset" value="EXAMPLE_MEL_RNA_expr.tsv"/>
+            <param name="data_type" value="rnaseq_counts"/>
+            <param name="annotation" value="Melanoma RNA-seq example_metadata.csv"/>
+            <param name="analysis_method_selector|analysis_method" value="Camera"/>
+            <param name="use_interactors" value="false"/>
+            <param name="include_disease_pathways" value="true"/>
+            <param name="comparison_factor" value="condition"/>
+            <param name="reference_group" value="MOCK"/>
+            <param name="comparison_group" value="MCM"/>
+            <output name="pathways">
+                <assert_contents>
+                    <has_text text="Pathway identifier"/>
+                </assert_contents>
+            </output>
+        </test>
+    </tests>
+
     <help><![CDATA[
         `Reactome <https://reactome.org>`_ is a curated database of pathways and reactions in human biology.
     ]]></help>
