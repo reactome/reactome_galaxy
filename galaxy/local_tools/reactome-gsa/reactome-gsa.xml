@@ -13,8 +13,6 @@
         <regex match="Error:" level="fatal" description="Tool encountered an error."/>
     </stdio>
 
-    <code file="options.py"/>
-
     <command><![CDATA[
 
 Rscript ${__tool_directory__}/reactome_analysis.R
