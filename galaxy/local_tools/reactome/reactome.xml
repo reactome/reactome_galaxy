@@ -386,30 +386,17 @@ Visit the `Reactome User Guide <https://reactome.org/userguide>`_ for detailed d
 
 For more information: visit our Youtube channel for an `Introduction to Reactome! <https://youtu.be/cA7lQACsgZk>`_
 
+Please also see additional `publications <https://reactome.org/community/publications>`_.
+
 Contact us
 ----------
 
 If you have any feedback or questions, please contact us at the `Reactome HelpDesk <mailto:help@reactome.org>`_.
 
-Citations
----------
-
-Please also see additional `publications <https://reactome.org/community/publications>`_.
-
-Orlic-Milacic M, Rothfels K, Matthews L, Wright A, Jassal B, Shamovsky V, Trinh Q, Gillespie M, Sevilla C,
-Tiwari K, Ragueneau E, Gong C, Stephan R, May B, Haw R, Weiser J, Beavers D, Conley P, Hermjakob H, Stein LD,
-D'Eustachio P, Wu G. Pathway-based, reaction-specific annotation of disease variants for elucidation of molecular
-phenotypes. *Database*, 2024. `doi:10.1093/database/baae03 <https://doi.org/10.1093/database/baae031>`_.
-
-Rothfels K, Milacic M, Matthews L, Haw R, Sevilla C, Gillespie M, Stephan R, Gong C, Ragueneau E, May B, Shamovsky V,
-Wright A, Weiser J, Beavers D, Conley P, Tiwari K, Jassal B, Griss J, Senff-Ribeiro A, Brunson T, Petryszak R,
-Hermjakob H, D'Eustachio P, Wu G, Stein L. Using the Reactome Database. *Curr Protoc*. 2023 Apr;3(4):e722.
-`doi:10.1002/cpz1.722 <https://doi.org/10.1002/cpz1.722>`_. `PubMed <https://pubmed.ncbi.nlm.nih.gov/37053306/>`_
-
     ]]></help>
 
     <citations>
-        <citation type="doi">10.1093/database/baae03</citation>
+        <citation type="doi">10.1093/database/baae031</citation>
         <citation type="doi">10.1002/cpz1.722</citation>
     </citations>
 
