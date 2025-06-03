@@ -13,7 +13,7 @@
         <regex match="Error:" level="fatal" description="Tool encountered an error."/>
     </stdio>
 
-    <code file="options.py" />
+    <code file="options.py"/>
 
     <command><![CDATA[
 
@@ -174,21 +174,26 @@ Rscript ${__tool_directory__}/reactome_analysis.R
             </options>
         </param>
 
-        <param name="reference_group" type="select" label="Reference group"
+        <param name="reference_group" type="text" label="Reference group"
                help="The baseline group against which other groups are compared. It usually represents the
                standard or default condition."
                optional="false"
-               refresh_on_change="true"
-               dynamic_options="get_distinct_values(annotation, column_name=comparison_factor)"/>
+               refresh_on_change="true"/>
 
         <param name="comparison_group" type="text" label="Comparison group"
                help="The group being compared to the reference group to assess differences or effects."
                optional="false"/>
 
-        <param name="covariates" type="text" label="Covariates"
+        <param name="covariates" type="select" label="Covariates"
                help="Comma separated list of variables that may influence the outcome but are not the main variable of interest.
                These are included in the statistical models to adjust for effects and improve accuracy."
-               optional="true"/>
+               optional="true"
+               multiple="true">
+            <options>
+                <filter type="data_meta" ref="annotation" key="column_names" multiple="true"/>
+                <filter type="remove_value" ref="comparison_factor" multiple="true"/>
+            </options>
+        </param>
 
     </inputs>
 
