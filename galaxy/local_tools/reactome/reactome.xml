@@ -285,99 +285,15 @@ Output
 Running the analysis will produce a list of pathways in .CSV or JSON format. There are also options
 for a detailed PDF report and HTML report. Entities that are found and not found from your submitted list.
 
-.. list-table::
-   :header-rows: 1
-
-   * - Pathway identifier
-     - Pathway name
-     - #Entities found
-     - #Entities total
-     - Entities ratio
-     - Entities pValue
-     - Entities FDR
-     - #Reactions found
-     - #Reactions total
-     - Reactions ratio
-     - Species identifier
-     - Species name
-     - Submitted entities found
-     - Mapped entities
-     - Found reaction identifiers
-   * - R-HSA-382556
-     - ABC-family proteins mediated transport
-     - 2
-     - 90
-     - 0.00755794
-     - 1.71E-04
-     - 0.0014858
-     - 2
-     - 27
-     - 0.00180457
-     - 9606
-     - Homo sapiens
-     - O15439;Q99758
-     - O15439;Q99758
-     - R-HSA-1454916;R-HSA-5683714
-   * - R-HSA-382551
-     - Transport of small molecules
-     - 3
-     - 725
-     - 0.06088344
-     - 2.26E-04
-     - 0.0014858
-     - 3
-     - 462
-     - 0.03087822
-     - 9606
-     - Homo sapiens
-     - O15439;P01023;Q99758
-     - O15439;P01023;Q99758
-     - R-HSA-264758;R-HSA-1454916;R-HSA-5683714
-   * - R-HSA-5683678
-     - Defective ABCA3 causes SMDP3
-     - 1
-     - 1
-     - 8.40E-05
-     - 2.52E-04
-     - 0.0014858
-     - 1
-     - 1
-     - 6.68E-05
-     - 9606
-     - Homo sapiens
-     - Q99758
-     - Q99758
-     - R-HSA-5683672
-   * - R-HSA-5688399
-     - Defective ABCA3 causes SMDP3
-     - 1
-     - 1
-     - 8.40E-05
-     - 2.52E-04
-     - 0.0014858
-     - 1
-     - 1
-     - 6.68E-05
-     - 9606
-     - Homo sapiens
-     - Q99758
-     - Q99758
-     - R-HSA-5688397
-   * - R-HSA-114608
-     - Platelet degranulation
-     - 2
-     - 128
-     - 0.01074908
-     - 3.44E-04
-     - 0.0014858
-     - 2
-     - 11
-     - 7.35E-04
-     - 9606
-     - Homo sapiens
-     - O15439;P01023
-     - O15439;P01023
-     - R-HSA-429157;R-HSA-481007
+==================  ========================================  ================  =================  ===============  ===============  ==============  =================  =================  ================  ==================  ============  ========================  =======================  =========================================
+Pathway identifier  Pathway name                              #Entities found   #Entities total    Entities ratio   Entities pValue  Entities FDR    #Reactions found   #Reactions total   Reactions ratio   Species identifier  Species name  Submitted entities found  Mapped entities          Found reaction identifiers
+==================  ========================================  ================  =================  ===============  ===============  ==============  =================  =================  ================  ==================  ============  ========================  =======================  =========================================
+R-HSA-382556        ABC-family proteins mediated transport    2                 90                 0.00755794       1.71E-04         0.0014858       2                  27                 0.00180457        9606                Homo sapiens   O15439;Q99758            O15439;Q99758            R-HSA-1454916;R-HSA-5683714
+R-HSA-382551        Transport of small molecules              3                 725                0.06088344       2.26E-04         0.0014858       3                  462                0.03087822        9606                Homo sapiens   O15439;P01023;Q99758     O15439;P01023;Q99758     R-HSA-264758;R-HSA-1454916;R-HSA-5683714
+R-HSA-5683678       Defective ABCA3 causes SMDP3              1                 1                  8.40E-05         2.52E-04         0.0014858       1                  1                  6.68E-05          9606                Homo sapiens   Q99758                   Q99758                   R-HSA-5683672
+R-HSA-5688399       Defective ABCA3 causes SMDP3              1                 1                  8.40E-05         2.52E-04         0.0014858       1                  1                  6.68E-05          9606                Homo sapiens   Q99758                   Q99758                   R-HSA-5688397
+R-HSA-114608        Platelet degranulation                    2                 128                0.01074908       3.44E-04         0.0014858       2                  11                 7.35E-04          9606                Homo sapiens   O15439;P01023            O15439;P01023            R-HSA-429157;R-HSA-481007
+==================  ========================================  ================  =================  ===============  ===============  ==============  =================  =================  ================  ==================  ============  ========================  =======================  =========================================
 
 More information
 ----------------
