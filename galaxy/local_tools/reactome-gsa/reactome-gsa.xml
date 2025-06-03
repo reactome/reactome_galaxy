@@ -1,4 +1,4 @@
-<tool id="reactome_gsa" name="Reactome GSA Analysis" version="0.0.0">
+<tool id="reactome_gsa" name="Reactome GSA Analysis" version="0.3.0">
     <description>Perform a ReactomeGSA analysis</description>
 
     <requirements>
@@ -162,10 +162,15 @@ Rscript ${__tool_directory__}/reactome_analysis.R
                is used. Must be between 0-1"
                value="0.5"/>
 
-        <param name="comparison_factor" type="text" label="Comparison factor"
+        <param name="comparison_factor" type="select" label="Comparison factor"
                help="Comparison factor is the column from your annotation distinguishing the 2 groups to compare,
                the reference and the comparison group."
-               optional="false"/>
+               optional="false"
+               refresh_on_change="true">
+            <options>
+                <filter type="data_meta" ref="annotation" key="column_names"/>
+            </options>
+        </param>
 
         <param name="reference_group" type="text" label="Reference group"
                help="The baseline group against which other groups are compared. It usually represents the
@@ -176,10 +181,16 @@ Rscript ${__tool_directory__}/reactome_analysis.R
                help="The group being compared to the reference group to assess differences or effects."
                optional="false"/>
 
-        <param name="covariates" type="text" label="Covariates"
+        <param name="covariates" type="select" label="Covariates"
                help="Comma separated list of variables that may influence the outcome but are not the main variable of interest.
                These are included in the statistical models to adjust for effects and improve accuracy."
-               optional="true"/>
+               optional="true"
+               multiple="true">
+            <options>
+                <filter type="data_meta" ref="annotation" key="column_names" multiple="true"/>
+                <filter type="remove_value" ref="comparison_factor" multiple="true"/>
+            </options>
+        </param>
 
     </inputs>
 
@@ -191,6 +202,25 @@ Rscript ${__tool_directory__}/reactome_analysis.R
         <data format="json" name="json_output" label="JSON Output"/>
         <data format="xlsx" name="excel_output" label="Excel Output"/>
     </outputs>
+
+    <tests>
+        <test>
+            <param name="dataset" value="EXAMPLE_MEL_RNA_expr.tsv"/>
+            <param name="data_type" value="rnaseq_counts"/>
+            <param name="annotation" value="Melanoma RNA-seq example_metadata.csv"/>
+            <param name="analysis_method_selector|analysis_method" value="Camera"/>
+            <param name="use_interactors" value="false"/>
+            <param name="include_disease_pathways" value="true"/>
+            <param name="comparison_factor" value="condition"/>
+            <param name="reference_group" value="MOCK"/>
+            <param name="comparison_group" value="MCM"/>
+            <output name="pathways">
+                <assert_contents>
+                    <has_text text="Pathway identifier"/>
+                </assert_contents>
+            </output>
+        </test>
+    </tests>
 
     <help><![CDATA[
         `Reactome <https://reactome.org>`_ is a curated database of pathways and reactions in human biology.
