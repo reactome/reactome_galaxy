@@ -6,7 +6,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
 import java.io.File
 
 private const val CLI_USER_AGENT = "Mozilla/5.0 (compatible; Reactome CLI/1.0)"
@@ -132,7 +131,7 @@ class ReactomeCli(
     }
 
     private fun downloadResultJson(token: String, filename: String) {
-        val url = "$reactomeUrl/AnalysisService/download/${token}/result.json"
+        val url = "${analysisUrl()}/download/${token}/result.json"
         val content = getTextContent(url)
         File(filename).writeText(content)
     }
