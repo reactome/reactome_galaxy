@@ -182,7 +182,8 @@ reactome
     </inputs>
 
     <outputs>
-        <data format="csv" name="pathways" label="Pathways"/>
+        <data format="csv" name="pathways"
+              label="Pathways ${$analysis_type_selector.species_name if ($analysis_type_selector.analysis_type == 'species') else ($analysis_type_selector.tissues if ($analysis_type_selector.analysis_type == 'tissues') else '')}"/>
         <data format="csv" name="entities_found" label="Entities Found">
             <filter>generate_entities_found</filter>
         </data>
