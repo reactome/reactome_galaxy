@@ -211,7 +211,8 @@ Rscript ${__tool_directory__}/reactome_analysis.R
             <param name="analysis_method_selector|analysis_method" value="Camera"/>
             <param name="use_interactors" value="false"/>
             <param name="include_disease_pathways" value="true"/>
-            <param name="comparison_factor" value="condition"/>
+            <!-- whitespace in front of condition required to due to input data -->
+            <param name="comparison_factor" value=" condition"/>
             <param name="reference_group" value="MOCK"/>
             <param name="comparison_group" value="MCM"/>
             <output name="pathways">
