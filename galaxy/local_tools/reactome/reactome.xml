@@ -4,7 +4,7 @@
     <requirements>
         <requirement type="package" version="0.0.0">reactome-cli</requirement>
     </requirements>
-    
+
     <command><![CDATA[
 #set $subcommand_arg = ''
 #set $project_to_human_arg = ''
@@ -73,9 +73,9 @@ reactome
     <inputs>
         <conditional name="analysis_type_selector">
             <param name="analysis_type" type="select" label="Select analysis type">
-                <option value="genes" selected="true">Gene List</option>
-                <option value="species">Species</option>
-                <option value="tissues">Tissues</option>
+                <option value="genes" selected="true">Analyse Gene List</option>
+                <option value="species">Species Comparison</option>
+                <option value="tissues">Tissue Distribution</option>
             </param>
 
             <when value="genes">
@@ -97,7 +97,7 @@ reactome
                        checked="true"/>
 
                 <param name="include_interactors" type="boolean" label="Include Interactors?"
-                       help="IntAct interactors are used to increase the analysis background"
+                       help="Interactors from the IntAct database can be used to expand the Reactome pathways, maximizing the probability of matching your identifiers to the pathway. Including IntAct interactors increase the analysis background."
                        checked="false"/>
             </when>
 
@@ -171,12 +171,13 @@ reactome
         <param name="generate_pdf" type="boolean" label="Generate PDF Report?" help="Select if a PDF report should be generated"
                checked="false"/>
         <param name="generate_entities_found" type="boolean" label="Generate Entities Found Output?"
-               help="Select if an Entities Found output should be generated" checked="false"/>
+               help="Select if an Entities Found CSV file should be generated" checked="false"/>
         <param name="generate_entities_not_found" type="boolean" label="Generate Entities Not Found Output?"
-               help="Select if an Entities Not Found output should be generated" checked="false"/>
+               help="Select if an Entities Not Found CSV file should be generated" checked="false"/>
         <param name="generate_html_report" type="boolean" label="Generate HTML Report?" help="Select if an HTML report should be generated"
                checked="false"/>
-        <param name="generate_json_report" type="boolean" label="Generate JSON Report?" help="Select if an JOSN report should be generated"
+        <param name="generate_json_report" type="boolean" label="Generate JSON file?"
+               help="Select if a file containing the complete analysis results in JSON format should be generated."
                checked="false"/>
 
     </inputs>
@@ -232,30 +233,87 @@ reactome
     </tests>
 
     <help><![CDATA[
-        `Reactome <https://reactome.org>`_ is a curated database of pathways and reactions in human biology.
+`Reactome <https://reactome.org>`_ is a manually-curated and peer-reviewed database of pathways and
+reactions in human biology.
 
-        This tool will perform an analysis on a list of gene/proteins provided as identifiers, one per line:
+Analyse Gene List
+-----------------
 
-        .. code-block:: text
+The “Analyse Gene List”  tool will perform overrepresentation analysis on a list of gene/proteins
+provided as identifiers, one per line. The ideal identifiers to use are UniProt IDs for proteins,
+ChEBI IDs for small molecules, and either HGNC gene symbols or ENSEMBL IDs for DNA/RNA molecules,
+as these are our main external reference sources for proteins and small molecules.
 
-            #GBM Uniprot
-            P01023
-            Q99758
-            O15439
-            O43184
-            Q13444
-            P82987
+To use, select an input type from the dropdown list to upload a file or paste a gene list.
 
-        Running the analysis will produce a list of pathways and a PDF report, along with other analysis details.
+Sample input:
+~~~~~~~~~~~~~
 
-        .. class:: warningmark
+.. code-block:: text
 
-        For more, see the `Reactome User Guide <https://reactome.org/userguide>`_
+    #GBM Uniprot
+    P01023
+    Q99758
+    O15439
+    O43184
+    Q13444
+    P82987
+
+Species Comparison
+------------------
+
+The Species Comparison tool allows you to compare human pathways with computationally-predicted
+pathways in model organisms, highlighting the elements of the pathway that are common to both
+species and those that may be absent in the model organism.
+
+To use, select a species from the dropdown list.
+
+Tissue Distribution
+-------------------
+
+The Tissue Distribution tool allows you to classify reactions into different human tissue types,
+to provide an evolving picture of the reactions and pathways in different cell- and tissue-specific
+environments. We have imported protein expression in different cell/tissue types from the Human
+Protein Atlas (HPA), overlaid these proteins on Reactome data, and extracted the subset of reactions
+for that particular cell type.
+
+To use, select one or more tissues from the dropdown list.
+
+Output
+------
+
+Running the analysis will produce a list of pathways in .CSV or JSON format. There are also options
+for a detailed PDF report and HTML report. Entities that are found and not found from your submitted list.
+
+==================  ========================================  ================  =================  ===============  ===============  ==============  =================  =================  ================  ==================  ============  ========================  =======================  =========================================
+Pathway identifier  Pathway name                              #Entities found   #Entities total    Entities ratio   Entities pValue  Entities FDR    #Reactions found   #Reactions total   Reactions ratio   Species identifier  Species name  Submitted entities found  Mapped entities          Found reaction identifiers
+==================  ========================================  ================  =================  ===============  ===============  ==============  =================  =================  ================  ==================  ============  ========================  =======================  =========================================
+R-HSA-382556        ABC-family proteins mediated transport    2                 90                 0.00755794       1.71E-04         0.0014858       2                  27                 0.00180457        9606                Homo sapiens   O15439;Q99758            O15439;Q99758            R-HSA-1454916;R-HSA-5683714
+R-HSA-382551        Transport of small molecules              3                 725                0.06088344       2.26E-04         0.0014858       3                  462                0.03087822        9606                Homo sapiens   O15439;P01023;Q99758     O15439;P01023;Q99758     R-HSA-264758;R-HSA-1454916;R-HSA-5683714
+R-HSA-5683678       Defective ABCA3 causes SMDP3              1                 1                  8.40E-05         2.52E-04         0.0014858       1                  1                  6.68E-05          9606                Homo sapiens   Q99758                   Q99758                   R-HSA-5683672
+R-HSA-5688399       Defective ABCA3 causes SMDP3              1                 1                  8.40E-05         2.52E-04         0.0014858       1                  1                  6.68E-05          9606                Homo sapiens   Q99758                   Q99758                   R-HSA-5688397
+R-HSA-114608        Platelet degranulation                    2                 128                0.01074908       3.44E-04         0.0014858       2                  11                 7.35E-04          9606                Homo sapiens   O15439;P01023            O15439;P01023            R-HSA-429157;R-HSA-481007
+==================  ========================================  ================  =================  ===============  ===============  ==============  =================  =================  ================  ==================  ============  ========================  =======================  =========================================
+
+More information
+----------------
+
+Visit the `Reactome User Guide <https://reactome.org/userguide>`_ for detailed documentation about each tool.
+
+For more information: visit our Youtube channel for an `Introduction to Reactome! <https://youtu.be/cA7lQACsgZk>`_
+
+Please also see additional `publications <https://reactome.org/community/publications>`_.
+
+Contact us
+----------
+
+If you have any feedback or questions, please contact us at the `Reactome HelpDesk <mailto:help@reactome.org>`_.
 
     ]]></help>
 
     <citations>
-        <citation type="doi">0.1093/nar/gkad1025</citation>
+        <citation type="doi">10.1093/database/baae031</citation>
+        <citation type="doi">10.1002/cpz1.722</citation>
     </citations>
 
 </tool>
