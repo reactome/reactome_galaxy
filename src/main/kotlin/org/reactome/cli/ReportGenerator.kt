@@ -4,13 +4,19 @@ import com.opencsv.CSVReader
 import java.io.File
 import java.util.Locale
 
+private const val PATHWAY_ID_FIELD = "Pathway identifier"
+private const val PATHWAY_NAME_FIELD = "Pathway name"
+
+private val NUMERIC_FIELDS = setOf("Entities ratio", "Entities pValue", "Entities FDR", "Reactions ratio")
+private val FIELDS_TO_SKIP = setOf("Submitted entities found", "Mapped entities", "Found reaction identifiers")
+
 data class CSVData(
     val headers: List<String>,
     val rows: List<Map<String, String>>
 )
 
-fun readCsvData(data: String): CSVData {
-    val reader = CSVReader(data.reader())
+fun readCsvData(contents: String): CSVData {
+    val reader = CSVReader(contents.reader())
     val allRows = reader.readAll()
 
     if (allRows.isEmpty()) {
@@ -29,38 +35,35 @@ fun readCsvData(data: String): CSVData {
     return CSVData(headers, rows)
 }
 
-private const val PATHWAY_ID_FIELD = "Pathway identifier"
-private const val PATHWAY_NAME_FIELD = "Pathway name"
-
-private val NUMERIC_FIELDS = setOf("Entities ratio", "Entities pValue", "Entities FDR", "Reactions ratio")
-private val FIELDS_TO_SKIP = setOf("Submitted entities found", "Mapped entities", "Found reaction identifiers")
-
 class ReportGenerator(private val reactomeUrl: String) {
 
     fun generateHtmlReport(htmlReportFile: String, pathwaysReportData: String, token: String) {
-
         val csvData = readCsvData(pathwaysReportData)
+        val report = generateReportFromCsvData(csvData, token)
+        File(htmlReportFile).writeText(report)
+    }
 
+    fun generateReportFromCsvData(csvData: CSVData, token: String): String {
         val htmlContent = StringBuilder()
-        htmlContent.append("<html>")
-        htmlContent.append("<head><title>Reactome Pathway Links</title></head>")
+        htmlContent.append("<html>\n")
+        htmlContent.append("<head><title>Reactome Pathway Links</title></head>\n")
 
-        htmlContent.append("<style>")
-        htmlContent.append("body { font-family: Arial, sans-serif; margin: 20px; }")
-        htmlContent.append("h1 { color: #333; }")
-        htmlContent.append("table { border-collapse: collapse; width: 100%; margin-top: 20px; }")
-        htmlContent.append("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }")
-        htmlContent.append("th { background-color: #f4f4f4; color: #333; }")
-        htmlContent.append("tr:nth-child(even) { background-color: #f9f9f9; }")
-        htmlContent.append("tr:hover { background-color: #f1f1f1; }")
-        htmlContent.append("a { color: #007bff; text-decoration: none; }")
-        htmlContent.append("a:hover { text-decoration: underline; }")
-        htmlContent.append("</style>")
+        htmlContent.append("<style>\n")
+        htmlContent.append("body { font-family: Arial, sans-serif; margin: 20px; }\n")
+        htmlContent.append("h1 { color: #333; }\n")
+        htmlContent.append("table { border-collapse: collapse; width: 100%; margin-top: 20px; }\n")
+        htmlContent.append("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }\n")
+        htmlContent.append("th { background-color: #f4f4f4; color: #333; }\n")
+        htmlContent.append("tr:nth-child(even) { background-color: #f9f9f9; }\n")
+        htmlContent.append("tr:hover { background-color: #f1f1f1; }\n")
+        htmlContent.append("a { color: #007bff; text-decoration: none; }\n")
+        htmlContent.append("a:hover { text-decoration: underline; }\n")
+        htmlContent.append("</style>\n")
 
-        htmlContent.append("<body>")
-        htmlContent.append("<h1>Pathways</h1>")
-        htmlContent.append("<table border=\"1\">")
-        htmlContent.append("<thead>")
+        htmlContent.append("<body>\n")
+        htmlContent.append("<h1>Pathways</h1>\n")
+        htmlContent.append("<table border=\"1\">\n")
+        htmlContent.append("<thead>\n")
 
         htmlContent.append("<tr>")
         csvData.headers.forEach { header ->
@@ -78,9 +81,9 @@ class ReportGenerator(private val reactomeUrl: String) {
             }
         }
 
-        htmlContent.append("</tr>")
-        htmlContent.append("</thead>")
-        htmlContent.append("<tbody>")
+        htmlContent.append("</tr>\n")
+        htmlContent.append("</thead>\n")
+        htmlContent.append("<tbody>\n")
         htmlContent.append("<tr>")
 
         csvData.rows.forEach { row ->
@@ -111,18 +114,18 @@ class ReportGenerator(private val reactomeUrl: String) {
                 }
 
             }
-            htmlContent.append("</tr>")
+            htmlContent.append("</tr>\n")
         }
 
-        htmlContent.append("</tbody>")
-        htmlContent.append("</table>")
-        htmlContent.append("</body>")
-        htmlContent.append("</html>")
+        htmlContent.append("</tbody>\n")
+        htmlContent.append("</table>\n")
+        htmlContent.append("</body>\n")
+        htmlContent.append("</html>\n")
 
-        File(htmlReportFile).writeText(htmlContent.toString())
+        return htmlContent.toString()
     }
 
-    fun pathwayDiagramUrl(pathwayId: String, token: String): String {
+    private fun pathwayDiagramUrl(pathwayId: String, token: String): String {
         return "${contentUrl()}/exporter/diagram/${pathwayId}.png?diagramProfile=Modern&token=$token&analysisProfile=Standard"
     }
 
@@ -130,7 +133,7 @@ class ReportGenerator(private val reactomeUrl: String) {
         return "$reactomeUrl/ContentService"
     }
 
-    fun pathwayBrowserLink(pathwayId: String, token: String): String {
+    private fun pathwayBrowserLink(pathwayId: String, token: String): String {
         return "$reactomeUrl/PathwayBrowser/#/${pathwayId}&DTAB=AN&ANALYSIS=${token}"
     }
 

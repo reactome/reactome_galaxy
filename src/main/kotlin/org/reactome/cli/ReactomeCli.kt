@@ -71,7 +71,7 @@ class ReactomeCli(
             }
 
             if (response.status.value != 200) {
-                throw Exception("Failed to submit gene list: ${response.status.value} - ${response.body<String>()}")
+                throw Exception("Gene analysis failed: ${response.status.value} - ${response.body<String>()}")
             }
 
             response.body()
@@ -87,7 +87,7 @@ class ReactomeCli(
             }
 
             if (response.status.value != 200) {
-                throw Exception("Failed to submit species: ${response.status.value} - ${response.body<String>()}")
+                throw Exception("Species analysis failed: ${response.status.value} - ${response.body<String>()}")
             }
 
             response.body()
@@ -104,7 +104,7 @@ class ReactomeCli(
             }
 
             if (response.status.value != 200) {
-                throw Exception("Failed to tissues: ${response.status.value} - ${response.body<String>()}")
+                throw Exception("Tissue analysis failed: ${response.status.value} - ${response.body<String>()}")
             }
 
             response.body()
@@ -112,32 +112,32 @@ class ReactomeCli(
     }
 
     private fun downloadEntitiesFound(token: String, resource: ResourceType = ResourceType.TOTAL, filename: String) {
-        val url = "${analysisUrl()}/download/${token}/entities/found/${resource}/entities_found.csv"
+        val url = "${analysisServiceUrl()}/download/${token}/entities/found/${resource}/entities_found.csv"
         val content = getTextContent(url)
         File(filename).writeText(content)
     }
 
     private fun downloadEntitiesNotFound(token: String, filename: String) {
-        val url = "${analysisUrl()}/download/${token}/entities/notfound/entities_not_found.csv"
+        val url = "${analysisServiceUrl()}/download/${token}/entities/notfound/entities_not_found.csv"
         val content = getTextContent(url)
         File(filename).writeText(content)
     }
 
     private fun downloadPathways(token: String, resource: ResourceType = ResourceType.TOTAL, filename: String): String {
-        val url = "${analysisUrl()}/download/${token}/pathways/${resource}/pathways.csv"
+        val url = "${analysisServiceUrl()}/download/${token}/pathways/${resource}/pathways.csv"
         val content = getTextContent(url)
         File(filename).writeText(content)
         return content
     }
 
     private fun downloadResultJson(token: String, filename: String) {
-        val url = "${analysisUrl()}/download/${token}/result.json"
+        val url = "${analysisServiceUrl()}/download/${token}/result.json"
         val content = getTextContent(url)
         File(filename).writeText(content)
     }
 
     private fun downloadReportPdf(token: String, species: String = "Homo%20sapiens", filename: String) {
-        val url = "${analysisUrl()}/report/${token}/${species}/report.pdf"
+        val url = "${analysisServiceUrl()}/report/${token}/${species}/report.pdf"
         val content = getBinaryContent(url)
         File(filename).writeBytes(content)
     }
@@ -176,7 +176,7 @@ class ReactomeCli(
         }
     }
 
-    private fun analysisUrl(): String {
+    private fun analysisServiceUrl(): String {
         return "$reactomeUrl/AnalysisService"
     }
 
@@ -186,19 +186,21 @@ class ReactomeCli(
 
     private fun identifiersUrl(projectToHuman: Boolean, includeInteractors: Boolean): String {
         val projection = if (projectToHuman) "projection" else ""
-        return "${analysisUrl()}/identifiers/${projection}?null&interactors=$includeInteractors"
+        return "${analysisServiceUrl()}/identifiers/${projection}?null&interactors=$includeInteractors"
     }
 
     private fun speciesUrl(speciesName: SpeciesName): String {
-        return "${analysisUrl()}/species/homoSapiens/${speciesName.dbId}"
+        return "${analysisServiceUrl()}/species/homoSapiens/${speciesName.dbId}"
     }
 
     private fun tissueUrl(): String {
-        return "${analysisUrl()}/identifiers/url/projection?null&interactors=false"
+        return "${analysisServiceUrl()}/identifiers/url/projection?null&interactors=false"
     }
 
     private fun tissuePayload(tissues: List<TissueName>): String {
         val tissueIds = sortedUniqueTissueIds(tissues)
+        // This 127.0.0.1 url actually passed to the Reactome server, it is not a local URL.
+        // The Reactome server uses this URL to fetch tissue samples from itself.
         return "https://127.0.0.1/ExperimentDigester/experiments/1/sample?included=${tissueIds}&omitNulls=true"
     }
 
@@ -207,10 +209,10 @@ class ReactomeCli(
     }
 }
 
-private fun extractToken(jsonBody: String): String {
+fun extractToken(jsonBody: String): String {
     val tokenRegex = """"token"\s*:\s*"([^"]+)"""".toRegex()
     val tokenMatch = tokenRegex.find(jsonBody)
-    val tokenAlt = tokenMatch?.groupValues?.get(1)
-    return tokenAlt ?: throw IllegalArgumentException("Token not found in the response")
+    val token = tokenMatch?.groupValues?.get(1)
+    return token ?: throw IllegalArgumentException("Token not found in the response")
 }
 

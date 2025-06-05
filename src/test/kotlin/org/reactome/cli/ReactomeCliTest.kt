@@ -5,83 +5,172 @@ import io.ktor.client.engine.mock.*
 import io.ktor.http.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 private const val REACTOME_TEST_URL = "http://example.com"
-private val UNITPROT_INPUT_FILE = "${System.getProperty("user.dir")}/src/test/resources/uniprot.txt"
-private val JSON_RESPONSE_FILE = "${System.getProperty("user.dir")}/src/test/resources/analysis_response.json"
-private val JSON_RESPONSE = java.io.File(JSON_RESPONSE_FILE).readText(Charsets.UTF_8)
-private const val TOKEN = "MjAyNTAyMTAxMzMyMjFfOTk%3D"
+
+private val RESOURCE_DIR = System.getProperty("user.dir") + "/src/test/resources/"
+private val UNIPROT_INPUT_FILE = "$RESOURCE_DIR/uniprot.txt"
+
+private const val PATHWAY_ID = "R-HSA-ID"
+private val PATHWAYS_CSV_RESPONSE_CONTENT =
+    """
+    Pathway identifier,Pathway name,other column
+    $PATHWAY_ID,Pathway Name,other column value
+    """.trimIndent()
+
+private const val ENTITIES_FOUND_CSV_RESPONSE_CONTENT = "Entities found CSV response content for testing purposes"
+private const val ENTITIES_NOT_FOUND_CSV_RESPONSE_CONTENT = "Entities not found CSV response content for testing purposes"
+private const val FULL_ANALYSIS_JSON_RESPONSE_CONTENT = """{ "summary": "JSON response body for testing purposes" }"""
+private const val PDF_RESPONSE_CONTENT = "PDF response content for testing purposes"
+
+private const val TOKEN = "response-token"
+private const val ANALYSIS_INTERMEDIATE_JSON_RESPONSE_CONTENT = """{"summary": { "token": "$TOKEN" }}"""
+
+private data class TestOutputs(
+    val pathwaysOutput: File,
+    val pdfOutput: File,
+    val htmlOutput: File,
+    val entitiesFoundOutput: File,
+    val entitiesNotFoundOutput: File,
+    val options: CommonOptions
+)
+
+private fun createTempOutputsAndOptions(tempDir: Path): TestOutputs {
+    val pathwaysOutput = tempDir.resolve("pathways.csv").toFile()
+    val pdfOutput = tempDir.resolve("report.pdf").toFile()
+    val htmlOutput = tempDir.resolve("pathway_links.html").toFile()
+    val entitiesFoundOutput = tempDir.resolve("entities_found.csv").toFile()
+    val entitiesNotFoundOutput = tempDir.resolve("entities_not_found.csv").toFile()
+
+    val options = CommonOptions().apply {
+        pathwaysFile = pathwaysOutput.toPath()
+        pdfReportFile = pdfOutput.toPath()
+        htmlReportFile = htmlOutput.toPath()
+        entitiesFoundFile = entitiesFoundOutput.toPath()
+        entitiesNotFoundFile = entitiesNotFoundOutput.toPath()
+    }
+
+    return TestOutputs(
+        pathwaysOutput,
+        pdfOutput,
+        htmlOutput,
+        entitiesFoundOutput,
+        entitiesNotFoundOutput,
+        options
+    )
+}
 
 class ReactomeCliTest {
 
-    @Disabled("need to create new output from pathways file, mabye")
     @Test
-    fun `Should return CSV for protein analysis`() {
-        val cli = reactomeCli()
-        val csvBody = cli.analyseGenes(UNITPROT_INPUT_FILE, projectToHuman = true, includeInteractions = true, CommonOptions())
+    fun `Should execute gene analysis and write all output files`(@TempDir tempDir: Path) {
+        val testOutputs = createTempOutputsAndOptions(tempDir)
 
-        val expectedCsvBody = """
-            "Pathway name","#Entities found","#Entities total","Entities ratio","Entities pValue","Entities FDR","#Reactions found","#Reactions total","Reactions ratio","Species identifier","Species name"
-            "Signaling by FGFR in disease","10","82","0.005199746354","3.09E-06","0.002737723912","47","99","0.006487124042","9606","Homo sapiens"
-            "Signaling by Receptor Tyrosine Kinases","29","634","0.040202916931","4.93E-06","0.002737723912","180","759","0.049734617653","9606","Homo sapiens"
-        """.trimIndent() + "\n"
+        val cli = ReactomeCli(testHttpClient(), REACTOME_TEST_URL)
+        cli.analyseGenes(UNIPROT_INPUT_FILE, projectToHuman = true, includeInteractions = true, testOutputs.options)
 
-        assertThat(csvBody).isEqualTo(expectedCsvBody)
+        validateResponseContents(testOutputs)
+    }
+
+    @Test
+    fun `Should execute tissue analysis and write all output files`(@TempDir tempDir: Path) {
+        val testOutputs = createTempOutputsAndOptions(tempDir)
+
+        val cli = ReactomeCli(testHttpClient(), REACTOME_TEST_URL)
+        cli.analyseTissues(listOf(TissueName.HEART_MUSCLE), testOutputs.options)
+
+        validateResponseContents(testOutputs)
+    }
+
+    @Test
+    fun `Should execute species analysis and write all output files`(@TempDir tempDir: Path) {
+        val testOutputs = createTempOutputsAndOptions(tempDir)
+
+        val cli = ReactomeCli(testHttpClient(), REACTOME_TEST_URL)
+        cli.analyseSpecies(SpeciesName.HUMAN, testOutputs.options)
+
+        validateResponseContents(testOutputs)
+    }
+
+    private fun validateResponseContents(testOutputs: TestOutputs) {
+        assertThat(testOutputs.pathwaysOutput.readText()).isEqualTo(PATHWAYS_CSV_RESPONSE_CONTENT)
+        assertThat(testOutputs.pdfOutput.readText()).isEqualTo(PDF_RESPONSE_CONTENT)
+
+        val htmlResultBody = testOutputs.htmlOutput.readText()
+        assertThat(htmlResultBody).contains("<title>Reactome Pathway Links</title>")
+        assertThat(htmlResultBody).contains(PATHWAY_ID)
+
+        assertThat(testOutputs.entitiesFoundOutput.readText()).isEqualTo(ENTITIES_FOUND_CSV_RESPONSE_CONTENT)
+        assertThat(testOutputs.entitiesNotFoundOutput.readText()).isEqualTo(ENTITIES_NOT_FOUND_CSV_RESPONSE_CONTENT)
     }
 
     @Test
     fun `Should throw exception on http error`() {
-        val cli = ReactomeCli(testHttpClient(JSON_RESPONSE), "WRONG_URL")
-        assertThatThrownBy { cli.analyseGenes(UNITPROT_INPUT_FILE, projectToHuman = true, includeInteractions = true, CommonOptions()) }
+        val cli = ReactomeCli(testHttpClient(), "WRONG_URL")
+        assertThatThrownBy { cli.analyseGenes(UNIPROT_INPUT_FILE, projectToHuman = true, includeInteractions = true, CommonOptions()) }
             .isInstanceOf(Exception::class.java)
-            .hasMessage("Failed to submit gene list: 404 - Not Found")
+            .hasMessageContaining("analysis failed")
     }
 
-    private fun testHttpClient(data: String): HttpClient {
+    @Test
+    fun `Should extract token from JSON response`() {
+        val json = """{"summary": { "token": "test-token" }}"""
+        val token = extractToken(json)
+        assertThat(token).isEqualTo("test-token")
+    }
+
+    private fun testHttpClient(): HttpClient {
         val mockEngine = MockEngine { request ->
             if (request.method == HttpMethod.Post && request.url.encodedPath == "/AnalysisService/identifiers/projection") {
                 respond(
-                    content = data,
+                    content = ANALYSIS_INTERMEDIATE_JSON_RESPONSE_CONTENT,
                     status = HttpStatusCode.OK,
                     headers = headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))
                 )
             } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/download/${TOKEN}/result.json")) {
                 respond(
-                    content = "abcdef",
+                    content = FULL_ANALYSIS_JSON_RESPONSE_CONTENT,
                     status = HttpStatusCode.OK,
                 )
             } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/download/${TOKEN}/entities/found/TOTAL/entities_found.csv")) {
                 respond(
-                    content = "abcdef",
+                    content = ENTITIES_FOUND_CSV_RESPONSE_CONTENT,
                     status = HttpStatusCode.OK,
                 )
             } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/download/${TOKEN}/entities/notfound/entities_not_found.csv")) {
                 respond(
-                    content = "abcdef",
+                    content = ENTITIES_NOT_FOUND_CSV_RESPONSE_CONTENT,
                     status = HttpStatusCode.OK,
                 )
             } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/download/${TOKEN}/pathways/TOTAL/pathways.csv")) {
                 respond(
-                    content = "abcdef",
+                    content = PATHWAYS_CSV_RESPONSE_CONTENT,
                     status = HttpStatusCode.OK,
                 )
             } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/report/${TOKEN}/Homo%20sapiens/report.pdf")) {
                 respond(
-                    content = "abcdef",
+                    content = PDF_RESPONSE_CONTENT,
+                    status = HttpStatusCode.OK,
+                )
+            } else if (request.method == HttpMethod.Post && request.url.encodedPath.startsWith("/AnalysisService/identifiers/url/projection")) {
+                respond(
+                    content = ANALYSIS_INTERMEDIATE_JSON_RESPONSE_CONTENT,
+                    status = HttpStatusCode.OK,
+                )
+            } else if (request.method == HttpMethod.Get && request.url.encodedPath.startsWith("/AnalysisService/species/homoSapiens/${SpeciesName.HUMAN.dbId}")) {
+                respond(
+                    content = ANALYSIS_INTERMEDIATE_JSON_RESPONSE_CONTENT,
                     status = HttpStatusCode.OK,
                 )
             } else {
-                respondError(HttpStatusCode.NotFound)
+                respondError(HttpStatusCode.NotFound, "Not found: ${request.method} ${request.url.encodedPath}")
             }
         }
 
         return HttpClient(mockEngine)
-    }
-
-    private fun reactomeCli(): ReactomeCli {
-        return ReactomeCli(testHttpClient(JSON_RESPONSE), REACTOME_TEST_URL)
     }
 }
