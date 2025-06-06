@@ -12,8 +12,8 @@ $ mvn package -Dconda.location=/your/miniconda/location
 $ java -jar target/reactome-jar-with-dependencies.jar \
       genes \
       --reactome_url https://release.reactome.org \
-      --identifiers_file src/test/resources/uniprot.txt \
-      --pathways /tmp/pathways.csv
+      --identifiers_file src/test/resources/uniprot_input.txt \
+      --pathways pathways_output.csv
 ```
 
 The client supports gene, tissue, and species analysis. Use `--help` on the main
@@ -35,5 +35,5 @@ $ planemo lint galaxy/local_tools/reactome-gsa
 $ planemo test galaxy/local_tools/reactome-gsa
 ```
 
-When installing the tools in a Galaxy instance, the Galaxy admin should ensure that the
+When installing the reactome tool in a Galaxy instance, the Galaxy admin should ensure that the
 tool is set to `HTML Rendered` in Admin -> Manage Allowlist.
