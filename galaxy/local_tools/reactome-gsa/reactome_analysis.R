@@ -4,6 +4,14 @@ library(optparse)
 library(httr)
 library(ReactomeGSA)
 
+options(keep.source = TRUE)
+options(show.error.locations = TRUE)
+options(error = function() {
+  cat("Error: ", geterrmessage(), "\n")
+  traceback(2, max.lines = 10)
+  q(status = 1)
+})
+
 option_list <- list(
   make_option(c("-m", "--method"), type = "character", default = "PADOG",
               help = "Analysis method (e.g. PADOG, Camera, ssGSEA) [default %default]"),
@@ -161,9 +169,9 @@ if (opt$method == "PADOG") {
                            name = opt$name,
                            type = opt$data_type,
                            sample_data = annotations,
-                           comparison_factor = opt$comparison_factor,
-                           comparison_group_1 = opt$reference_group,
-                           comparison_group_2 = opt$comparison_group,
+                           comparison_factor = trimws(opt$comparison_factor),
+                           comparison_group_1 = trimws(opt$reference_group),
+                           comparison_group_2 = trimws(opt$comparison_group),
                            additional_factors = additional_factors_vector,
                            sample_groups = opt$sample_groups,
                            normalisation_method = normalisation_function
@@ -174,9 +182,9 @@ if (opt$method == "PADOG") {
                            name = opt$name,
                            type = opt$data_type,
                            sample_data = annotations,
-                           comparison_factor = opt$comparison_factor,
-                           comparison_group_1 = opt$reference_group,
-                           comparison_group_2 = opt$comparison_group,
+                           comparison_factor = trimws(opt$comparison_factor),
+                           comparison_group_1 = trimws(opt$reference_group),
+                           comparison_group_2 = trimws(opt$comparison_group),
                            additional_factors = additional_factors_vector,
                            normalisation_method = normalisation_function
     )
@@ -186,9 +194,9 @@ if (opt$method == "PADOG") {
                            name = opt$name,
                            type = opt$data_type,
                            sample_data = annotations,
-                           comparison_factor = opt$comparison_factor,
-                           comparison_group_1 = opt$reference_group,
-                           comparison_group_2 = opt$comparison_group,
+                           comparison_factor = trimws(opt$comparison_factor),
+                           comparison_group_1 = trimws(opt$reference_group),
+                           comparison_group_2 = trimws(opt$comparison_group),
                            additional_factors = additional_factors_vector,
                            pathways_to_include = opt$pathways_to_include,
                            min_pathway_size = opt$min_pathway_size,
