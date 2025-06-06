@@ -319,7 +319,14 @@ pdf_url <- gsa_reports$url[gsa_reports$name == "PDF Report"]
 
 cat("Reactome analysis results:\n")
 links = reactome_links(result, print_result=TRUE, return_result=TRUE)
-gsas_link <- Filter(function(x) x["name"] == "Gene Set Analysis Summary", links)[[1]]
+
+summary_link_name <- "Gene Set Analysis Summary"
+if (opt$method == "ssGSEA") {
+  summary_link_name <- "Gene Set Variation Summary"
+}
+
+gsas_link <- Filter(function(x) x["name"] == summary_link_name, links)[[1]]
+
 full_url  <- gsas_link["url"]
 base_url <- as.character(sub("^(https?://[^/]+).*$", "\\1", full_url))
 token_enc <- sub(".*ANALYSIS=([^&]+).*", "\\1", full_url)
