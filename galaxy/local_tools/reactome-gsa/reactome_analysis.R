@@ -4,6 +4,7 @@ library(optparse)
 library(httr)
 library(ReactomeGSA)
 
+# setup error handling to print stacktrace
 options(keep.source = TRUE)
 options(show.error.locations = TRUE)
 options(error = function() {
@@ -11,6 +12,10 @@ options(error = function() {
   traceback(2, max.lines = 10)
   q(status = 1)
 })
+
+# These need to be consistent with the ReactomeGSA
+reactome_gsa_url <- "https://gsa.reactome.org"
+reactome_gsa_version <- "0.1"
 
 option_list <- list(
   make_option(c("-m", "--method"), type = "character", default = "PADOG",
@@ -134,7 +139,6 @@ detect_separator_and_load <- function(fn, header = TRUE, stringsAsFactors = FALS
   return(df)
 }
 
-# TODO double check this, and maybe allow the user to specify more dynamically in the input
 if (opt$data_type %in% c("rnaseq_counts", "proteomics_sc")) {
   normalisation_function <- opt$discrete_normalisation_function
 } else if (opt$data_type %in% c("rnaseq_norm", "proteomics_int", "microarray_norm")) {
@@ -213,10 +217,6 @@ cat("Performing Reactome GSA analysis...\n")
 result <- perform_reactome_analysis(request = request, compress = FALSE)
 cat("Analysis complete.\n")
 
-# need to be consistent with the ReactomeGSA
-reactome_gsa_url <- "https://gsa.reactome.org"
-reactome_gsa_version <- "0.1"
-
 get_reactome_analysis_report_status <- function(analysis_id) {
   report_status_url = paste(c(reactome_gsa_url, reactome_gsa_version, "report_status", analysis_id), collapse="/")
   status_obj <- tryCatch(
@@ -224,9 +224,16 @@ get_reactome_analysis_report_status <- function(analysis_id) {
     error = function(e) list(completed = 0, description = "Unknown", status = "running")
   )
 
+  if (is.null(status_obj$description)) {
+    status_obj$description <- "Unknown"
+  }
+
   return(status_obj)
 }
 
+running_status_values = c("running", "Report generation queued")
+
+# Function to poll the Reactome analysis status endpoint until it is complete or fails max_errors times.
 poll_until_complete <- function(
   status_fn,           # function(analysis_id, reactome_url) -> list(status, description, completed, ...)
   analysis_id,
@@ -235,6 +242,7 @@ poll_until_complete <- function(
   sleep_time = 1
 ) {
   completed <- status_fn(analysis_id)
+
   error_count <- 0
 
   is_done <- FALSE
@@ -244,20 +252,20 @@ poll_until_complete <- function(
     on_progress(completed[["completed"]], completed[["description"]])
   }
 
-  while (completed[["status"]] == "running") {
+  while (completed[["status"]] %in% running_status_values) {
     Sys.sleep(sleep_time)
     completed <- tryCatch({
       status_fn(analysis_id)
     }, error = function(cond) {
       if (error_count < max_errors) {
         error_count <<- error_count + 1
-        return(completed) # return last known completed status
+        return(completed)
       }
       stop("Error: Failed to connect to ReactomeGSA. Please contact support if this error persists at help@reactome.org", call. = FALSE)
     })
 
     if (!is.null(on_progress)) {
-      if (completed[["description"]] != last_message && completed[["status"]] == "running" && !is_done) {
+      if (completed[["description"]] != last_message && completed[["status"]] %in% running_status_values && !is_done) {
         on_progress(completed[["completed"]], completed[["description"]])
         last_message <- completed[["description"]]
       } else if (!is_done) {
@@ -271,8 +279,11 @@ poll_until_complete <- function(
   completed
 }
 
+# initiate analysis, this is async and will return an analysis ID
+# we'll use for polling the status
 analysis_id <- start_reactome_analysis(request = request)
 
+# poll for completion for the analysis request
 completed_status <- poll_until_complete(
   status_fn = get_reactome_analysis_status,
   analysis_id = analysis_id,
@@ -281,10 +292,12 @@ completed_status <- poll_until_complete(
   })
 
 if (completed_status[["status"]] == "failed") {
-    if (verbose) warning("Reactome Analysis failed: ", completed[["description"]])
+    warning("Reactome Analysis failed: ", completed[["description"]])
     return(NULL)
 }
 
+# also poll for the completion of the report generation, triggered by create_reports = TRUE
+# in the request
 report_completed_status <- poll_until_complete(
   status_fn = get_reactome_analysis_report_status,
   analysis_id = analysis_id,
@@ -293,10 +306,11 @@ report_completed_status <- poll_until_complete(
   })
 
 if (report_completed_status[["status"]] == "failed") {
-    if (verbose) warning("Reactome Report generation failed: ", report_completed_status[["description"]])
+    warning("Reactome Report generation failed: ", report_completed_status[["description"]])
     return(NULL)
 }
 
+# we should now be ready to download the results
 result <- get_reactome_analysis_result(analysis_id = analysis_id)
 
 gsa_reports = report_completed_status$reports
@@ -336,10 +350,21 @@ cat(paste(jobs))
 
 for (job in jobs) {
   url  <- job$url
-  cat(url, "\n")
-  resp <- GET(url, write_disk(job$dest, overwrite = TRUE))
+  dest <- job$dest
+
+  cat(paste0("Retrieving '",
+             ifelse(is.null(url), "(null)", trimws(as.character(url))),
+             "' to '",
+             ifelse(is.null(dest), "(null)", trimws(as.character(dest))),
+             "'\n")
+  )
+
+  resp <- GET(url, write_disk(dest, overwrite = TRUE))
   stop_for_status(resp)
-  cat("Downloaded ", job$dest, "\n")
+
+  cat(paste0("Downloaded '",
+             ifelse(is.null(dest), "(null)", trimws(as.character(dest))),
+             "'\n"))
 }
 
 cat("Reactome analysis completed successfully.\n")
