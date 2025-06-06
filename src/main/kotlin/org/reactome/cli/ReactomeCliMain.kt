@@ -1,16 +1,16 @@
 package org.reactome.cli
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.HttpTimeout
-import java.nio.file.Path
-import java.util.concurrent.Callable
-import kotlin.system.exitProcess
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import mu.KotlinLogging
 import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Mixin
 import picocli.CommandLine.Option
+import java.nio.file.Path
+import java.util.concurrent.Callable
+import kotlin.system.exitProcess
 
 private const val DEFAULT_TIMEOUT_MILLIS = 60_000L
 private const val DEFAULT_REACTOME_URL = "https://reactome.org"
@@ -29,7 +29,7 @@ class ReactomeCliMain : Runnable {
     }
 }
 
-@Command(name = "genes", description = ["Analyze genes with provided options"])
+@Command(name = "genes", description = ["Analyze genes with provided options"], mixinStandardHelpOptions = true)
 class GeneCommand : Callable<Int> {
 
     @Option(
@@ -81,7 +81,7 @@ class GeneCommand : Callable<Int> {
     }
 }
 
-@Command(name = "species", description = ["Analyse species"])
+@Command(name = "species", description = ["Analyse species"], mixinStandardHelpOptions = true)
 class SpeciesCommand : Callable<Int> {
 
     @Option(
@@ -114,7 +114,7 @@ class SpeciesCommand : Callable<Int> {
     }
 }
 
-@Command(name = "tissues", description = ["Analyse tissues"])
+@Command(name = "tissues", description = ["Analyse tissues"], mixinStandardHelpOptions = true)
 class TissuesCommand : Callable<Int> {
 
     @Option(
