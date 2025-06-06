@@ -224,8 +224,14 @@ get_reactome_analysis_report_status <- function(analysis_id) {
     error = function(e) list(completed = 0, description = "Unknown", status = "running")
   )
 
+  if (is.null(status_obj$description)) {
+    status_obj$description <- "Unknown"
+  }
+
   return(status_obj)
 }
+
+running_status_values = c("running", "Report generation queued")
 
 poll_until_complete <- function(
   status_fn,           # function(analysis_id, reactome_url) -> list(status, description, completed, ...)
@@ -235,6 +241,8 @@ poll_until_complete <- function(
   sleep_time = 1
 ) {
   completed <- status_fn(analysis_id)
+#   print(paste("Starting polling, initial result:", capture.output(print(completed))))
+
   error_count <- 0
 
   is_done <- FALSE
@@ -244,7 +252,7 @@ poll_until_complete <- function(
     on_progress(completed[["completed"]], completed[["description"]])
   }
 
-  while (completed[["status"]] == "running") {
+  while (completed[["status"]] %in% running_status_values) {
     Sys.sleep(sleep_time)
     completed <- tryCatch({
       status_fn(analysis_id)
@@ -255,9 +263,10 @@ poll_until_complete <- function(
       }
       stop("Error: Failed to connect to ReactomeGSA. Please contact support if this error persists at help@reactome.org", call. = FALSE)
     })
+#     print(paste("Polling, result:", capture.output(print(completed))))
 
     if (!is.null(on_progress)) {
-      if (completed[["description"]] != last_message && completed[["status"]] == "running" && !is_done) {
+      if (completed[["description"]] != last_message && completed[["status"]] %in% running_status_values && !is_done) {
         on_progress(completed[["completed"]], completed[["description"]])
         last_message <- completed[["description"]]
       } else if (!is_done) {
@@ -281,7 +290,7 @@ completed_status <- poll_until_complete(
   })
 
 if (completed_status[["status"]] == "failed") {
-    if (verbose) warning("Reactome Analysis failed: ", completed[["description"]])
+    warning("Reactome Analysis failed: ", completed[["description"]])
     return(NULL)
 }
 
@@ -293,7 +302,7 @@ report_completed_status <- poll_until_complete(
   })
 
 if (report_completed_status[["status"]] == "failed") {
-    if (verbose) warning("Reactome Report generation failed: ", report_completed_status[["description"]])
+    warning("Reactome Report generation failed: ", report_completed_status[["description"]])
     return(NULL)
 }
 
