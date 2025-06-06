@@ -279,7 +279,7 @@ poll_until_complete <- function(
   completed
 }
 
-# initiate analys, this is async and will return an analysis ID
+# initiate analysis, this is async and will return an analysis ID
 # we'll use for polling the status
 analysis_id <- start_reactome_analysis(request = request)
 
