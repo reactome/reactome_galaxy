@@ -50,7 +50,7 @@
 reactome
   $subcommand "$subcommand_arg"
   $project_to_human_arg $include_interactors_arg
-  --reactome_url 'https://release.reactome.org'
+  --reactome_url 'https://reactome.org'
   --pathways '$pathways'
   #if $generate_pdf:
     --pdf_report "$pdf_report"
