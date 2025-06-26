@@ -157,7 +157,7 @@ Rscript ${__tool_directory__}/reactome_analysis.R
                checked="true"/>
 
         <param name="max_missing_values" type="float" label="Max missing values"
-               help="The maximum (relative) number of missing values withing one comparison group before a gene/protein is
+               help="The maximum (relative) number of missing values within one comparison group before a gene/protein is
                removed form the analysis. If no comparison groups are defined, the number of missing values across all samples
                is used. Must be between 0-1"
                value="0.5"/>
@@ -224,8 +224,62 @@ Rscript ${__tool_directory__}/reactome_analysis.R
     </tests>
 
     <help><![CDATA[
-        `Reactome <https://reactome.org>`_ is a curated database of pathways and reactions in human biology.
-    ]]></help>
+`Reactome <https://reactome.org>`_ is a manually-curated and peer-reviewed database of pathways and reactions in human biology.
+
+Analyse Gene Expression (ReactomeGSA)
+-------------------------------------
+
+This “Analyse Gene Expression” or ReactomeGSA resource provides comparative pathway analyses of multi-omics datasets. It allows
+researchers to uncover the functional relevance of a list of genes, associated with quantitative data, in the context of
+biological pathways and processes.
+
+The ideal identifiers to use are:
+
+* UniProt IDs for proteins
+* ChEBI IDs for small molecules
+* HGNC gene symbols or ENSEMBL IDs for DNA/RNA molecules
+
+These are our main external reference sources for proteins and small molecules.
+
+In Reactome, we offer three gene-set enrichment analysis algorithms:
+
+PADOG: Pathway Analysis with Down-weighting of Overlapping Genes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- It corrects for **gene set redundancy**; some pathways share many genes, which can bias results.
+- Instead of treating all genes equally, PADOG down-weights genes that appear in multiple pathways, making the analysis less biased
+  by highly represented genes.
+- Works well in cases where overlapping genes skew enrichment scores in traditional methods.
+
+CAMERA: Correlation Adjusted Mean Rank
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- It adjusts for **inter-gene** correlation in gene sets.
+- Traditional enrichment approaches assume genes are independent, but in reality, co-expressed genes within a pathway tend to be correlated.
+- CAMERA corrects for this by adjusting the statistical testing, making it more reliable when genes within pathways have strong dependencies.
+- Works well for datasets where gene co-expression is expected, for example, in transcriptomic data.
+
+ssGSEA: Single-sample Gene Set Enrichment Analysis
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ssGSEA calculates an **enrichment score** for each gene set in individual samples.
+- It does not rely on ranking differentially expressed genes across conditions but rather assigns an enrichment score per sample based
+  on the expression of genes in a pathway.
+- This makes it useful for single-sample comparisons, such as identifying pathway activity in individual patients or cell types.
+- Works well for single-cell or single-sample datasets.
+
+More Information
+----------------
+Visit the `Reactome User Guide <https://reactome.org/userguide>`_ for detailed documentation about each tool.
+
+For more information: visit our Youtube channel for an `Introduction to Reactome <https://youtu.be/cA7lQACsgZk>`_!
+
+Contact Us
+----------
+
+If you have any feedback or questions, please contact us at the `Reactome HelpDesk <mailto:help@reactome.org>`_.
+
+]]></help>
 
     <citations>
         <citation type="doi">10.1093/bioinformatics/btae338</citation>
