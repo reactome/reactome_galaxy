@@ -9,9 +9,8 @@ This application enables users to perform pathway analysis using Reactome's comp
 ### Key Features
 
 - **Multiple Analysis Types**: Supports gene, tissue, and species pathway analysis
-- **Dual Integration**: Provides both Java CLI and R-based analysis tools
 - **Galaxy Platform Ready**: Includes complete Galaxy tool configurations with tests
-- **Flexible Input**: Accepts various identifier formats and gene lists
+- **Comprehensive Input**: Accepts various identifier formats and gene lists
 - **Comprehensive Output**: Generates detailed pathway analysis results in multiple formats
 
 ### Analysis Capabilities
@@ -21,13 +20,19 @@ This application enables users to perform pathway analysis using Reactome's comp
 3. **Species Analysis**: Compare pathways across different species
 4. **GSA Analysis**: Gene Set Analysis using the ReactomeGSA R package
 
+### CLI Technical Overview
+
+The Reactome CLI is a simple command line interface which wraps calls to the Reactome web apis written in Kotlin. It provides an easy
+entrypoint for workflow engines to call these apis, without needing to worry about constructing input HTTP requests and processing 
+outputs.
+
 ## Development Setup
 
 ### Prerequisites
 
 - **Java Development Kit (JDK)**: Version 11 or higher
 - **Apache Maven**: For building the Java CLI
-- **Conda**: For managing Galaxy tool dependencies
+- **1Conda**: For managing Galaxy tool dependencies
 - **Python**: For Galaxy integration and testing
 - **Planemo**: For Galaxy tool testing and linting
 
@@ -145,47 +150,17 @@ Both tools include complete Galaxy tool definitions with parameter validation, h
 
 #### Running Tools in Galaxy
 
-Once installed in a Galaxy instance, the tools can be accessed through the Galaxy interface:
-
-**Reactome Analysis Tool**:
-1. Navigate to the **Tools** panel in Galaxy
-2. Look for **Reactome** in the tool list (typically under pathway analysis or similar category)
-3. Select your analysis type:
-    - **Gene Analysis**: Upload a gene list file or paste identifiers
-    - **Tissue Analysis**: Provide gene list and select target tissue
-    - **Species Analysis**: Compare pathways across species
-4. Configure parameters:
-    - **Reactome URL**: Usually pre-set to the current release
-    - **Input format**: Select appropriate identifier type (UniProt, Ensembl, etc.)
-    - **Output options**: Choose desired result formats
-5. **Execute** the analysis
-6. Results will appear in your Galaxy history as downloadable files
-
-**ReactomeGSA Tool**:
-1. Find **ReactomeGSA** in the Tools panel
-2. Upload your expression data or gene sets
-3. Configure GSA-specific parameters:
-    - **Analysis method**: Choose statistical approach
-    - **Species**: Select organism
-    - **Pathway database**: Configure Reactome options
-4. **Run** the gene set analysis
-5. Download results including pathway enrichment and visualization files
-
-**Input File Formats**:
-- Plain text files with one gene/protein identifier per line
-- CSV files with gene lists and optional expression data
-- Standard Galaxy datasets from previous analysis steps
-
-**Output Files**:
-- **CSV results**: Pathway enrichment statistics and gene mappings
-- **HTML reports**: Interactive visualizations and summaries
-- **Graphics**: Pathway diagrams and plots (when applicable)
+Once installed in a Galaxy instance, the tools can be accessed through the Galaxy interface. Please refer to the
+help provided in the Galaxy tool for documentation on running the tool and the input and output data supported.
 
 ## Distribution
 
-### Conda Package
+### Bioconda Package
 
-The Reactome Galaxy tools are distributed via Conda, which handles dependency management for the Galaxy platform. The tools automatically install required dependencies when deployed in a Galaxy instance.
+The Reactome Galaxy tools are distributed via bioconda, which handles dependency management for the Galaxy platform. The tools automatically install required dependencies when deployed in a Galaxy instance.
+
+The conda packaging and integration with galaxy is tested as part of the integrated tests above, but to actually release to bioconda the recipes must
+be added to the [central bioconda recipe repo](https://github.com/bioconda/bioconda-recipes) and follow their [contribution workflow](https://bioconda.github.io/contributor/workflow.html)
 
 **Installation in Galaxy**:
 - Tools are installed through Galaxy's tool installation interface
@@ -197,10 +172,8 @@ The Reactome Galaxy tools are distributed via Conda, which handles dependency ma
 The tools are available through the Galaxy ToolShed, the official repository for Galaxy tools:
 
 **ToolShed Distribution**:
-- **Main Tool**: Available as `reactome` in the Galaxy ToolShed
-- **GSA Tool**: Available as `reactome-gsa` in the Galaxy ToolShed
-- **Automatic Updates**: New versions are automatically distributed through the ToolShed
-- **Integration Testing**: All ToolShed releases include validated test cases
+- Both tools are packages and distributed together in the [central toolshed](https://toolshed.g2.bx.psu.edu/)
+- Currently, distribution is a manual process. New revisions can be added by running `planemo shed_update --shed_target toolshed` from the `galaxy/local_tools` directory.
 
 ### Installation Notes for Galaxy Administrators
 
@@ -209,34 +182,13 @@ When installing the Reactome tools in a Galaxy instance:
 1. **HTML Rendering**: Ensure tools are configured for "HTML Rendered" output in Admin → Manage Allowlist
 2. **Dependencies**: Conda must be properly configured for automatic dependency resolution
 3. **Testing**: Run the included test cases to verify proper installation
-4. **Resources**: Tools may require adequate memory allocation for large gene sets
-
-### Version Management
-
-- **CLI Versions**: Tracked through Maven versioning in `pom.xml`
-- **Galaxy Tool Versions**: Managed independently for each tool configuration
-- **Dependency Versions**: Specified in tool configurations and automatically managed by Conda
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run the full test suite with `mvn package -Dconda.location=/path/to/your/miniconda`
-5. Ensure all tests and linting checks pass
-6. Submit a pull request
-
-The Maven build process will automatically validate both Java code and Galaxy tool configurations.
 
 ## Support
 
-For issues related to:
-- **Reactome Analysis**: Contact the Reactome team
-- **Galaxy Integration**: Use the Galaxy Community forums
-- **Tool Development**: Open an issue in this repository
+For any questions or issues with running these tools contact [Reactome HelpDesk](mailto:help@reactome.org)
 
 ## Related Projects
 
 - [ReactomeGSA](https://github.com/reactome/ReactomeGSA): R package for gene set analysis
-- [Reactome Database](https://reactome.org): Main Reactome pathway database
+- [Reactome](https://reactome.org): Main Reactome pathway database
 - [Galaxy Project](https://galaxyproject.org): Open source bioinformatics platform
