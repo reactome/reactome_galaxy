@@ -60,13 +60,16 @@ outputs.
 
 ### Development Workflow
 
-1. **Make code changes** to the Java source files or Galaxy tool configurations
-2. **Test and build** using Maven (automatically runs all tests and linting):
+1. **Make an issue and branch** the branch correspond to the issue number.
+2. **Make code changes** to the Java source files or Galaxy tool configurations
+3. **Test and build** using Maven (automatically runs all tests and linting):
    ```bash
    mvn package -Dconda.location=/path/to/your/miniconda
    ```
-3. **Verify results** - the build will fail if any tests or linting checks fail
-4. **Commit changes** once all automated checks pass
+4. **Verify results** the build will fail if any tests or linting checks fail
+5. **Commit changes** once all automated checks pass
+6. **Create a PR** and have someone review the changes
+7. **Merge the PR** 
 
 ### Testing
 
@@ -160,7 +163,13 @@ help provided in the Galaxy tool for documentation on running the tool and the i
 The Reactome Galaxy tools are distributed via bioconda, which handles dependency management for the Galaxy platform. The tools automatically install required dependencies when deployed in a Galaxy instance.
 
 The conda packaging and integration with galaxy is tested as part of the integrated tests above, but to actually release to bioconda the recipes must
-be added to the [central bioconda recipe repo](https://github.com/bioconda/bioconda-recipes) and follow their [contribution workflow](https://bioconda.github.io/contributor/workflow.html)
+be added to the [central bioconda recipe repo](https://github.com/bioconda/bioconda-recipes). Follow these
+steps to release to bioconda:
+1. Read and get setup with the bioconda recipe repo using their [contribution workflow](https://bioconda.github.io/contributor/workflow.html)
+2. Run `mvn clean package -Dconda.location=/path/to/your/miniconda` and ensure all tests pass and a jar is built.
+3. Create a release in GitHub from the [release page](https://github.com/reactome/reactome_galaxy/releases). Add the local `[reactome-jar-with-dependencies.jar](target%2Freactome-jar-with-dependencies.jar)` you've built to the release, named of the format `reacome-v{new_version}.jar`
+4. Update `bioconda-recipes/recipes/reactome-cli` with your new version, and follow their PR workflow to get it merged and released.
+5. When complete you can now release a new version of the Galaxy XML to the toolshed. 
 
 **Installation in Galaxy**:
 - Tools are installed through Galaxy's tool installation interface
@@ -172,8 +181,12 @@ be added to the [central bioconda recipe repo](https://github.com/bioconda/bioco
 The tools are available through the Galaxy ToolShed, the official repository for Galaxy tools:
 
 **ToolShed Distribution**:
-- Both tools are packages and distributed together in the [central toolshed](https://toolshed.g2.bx.psu.edu/)
-- Currently, distribution is a manual process. New revisions can be added by running `planemo shed_update --shed_target toolshed` from the `galaxy/local_tools` directory.
+
+Both tools are packages and distributed together in the [central toolshed](https://toolshed.g2.bx.psu.edu/). Currently, distribution is a manual process. 
+New revisions can be released to the toolshed by following the following steps: 
+1. Update the tool versions in [reactome.xml](galaxy/local_tools/reactome/reactome.xml) and [reactome_gsa.xml](galaxy/local_tools/reactome-gsa/reactome-gsa.xml)
+2. If the tool requires a new version of CLI, you must first release to bioconda by following the bioconda packaging above. Then update the dependency in [reactome.xml](galaxy/local_tools/reactome/reactome.xml)
+3. `planemo shed_update --shed_target toolshed` from the `galaxy/local_tools` directory.
 
 ### Installation Notes for Galaxy Administrators
 
