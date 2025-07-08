@@ -32,7 +32,7 @@ outputs.
 
 - **Java Development Kit (JDK)**: Version 11 or higher
 - **Apache Maven**: For building the Java CLI
-- **1Conda**: For managing Galaxy tool dependencies
+- **Conda**: For managing Galaxy tool dependencies
 - **Python**: For Galaxy integration and testing
 - **Planemo**: For Galaxy tool testing and linting
 
@@ -167,7 +167,7 @@ be added to the [central bioconda recipe repo](https://github.com/bioconda/bioco
 steps to release to bioconda:
 1. Read and get setup with the bioconda recipe repo using their [contribution workflow](https://bioconda.github.io/contributor/workflow.html)
 2. Run `mvn clean package -Dconda.location=/path/to/your/miniconda` and ensure all tests pass and a jar is built.
-3. Create a release in GitHub from the [release page](https://github.com/reactome/reactome_galaxy/releases). Add the local `[reactome-jar-with-dependencies.jar](target%2Freactome-jar-with-dependencies.jar)` you've built to the release, named of the format `reacome-v{new_version}.jar`
+3. Create a release in GitHub from the [release page](https://github.com/reactome/reactome_galaxy/releases). Add the local `[reactome-jar-with-dependencies.jar](target%2Freactome-jar-with-dependencies.jar)` you've built to the release, named of the format `reacome-v{new_version}.jar` where `new_version` is the version to be released. 
 4. Update `bioconda-recipes/recipes/reactome-cli` with your new version, and follow their PR workflow to get it merged and released.
 5. When complete you can now release a new version of the Galaxy XML to the toolshed. 
 
