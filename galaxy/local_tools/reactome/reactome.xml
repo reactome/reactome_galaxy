@@ -85,9 +85,9 @@ reactome
                         <option value="text">Paste Text</option>
                         <sanitizer>
                             <valid>
-                                <add>\t</add>
-                                <add>\n</add>
-                                <add>#</add>
+                                <add value = "\t" />
+                                <add value = "\n" />
+                                <add value = "#" />
                             </valid>
                         </sanitizer>
                     </param>
