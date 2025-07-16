@@ -1,4 +1,4 @@
-<tool id="reactome" name="Reactome Analysis" version="1.0.0">
+<tool id="reactome" name="Reactome Analysis" version="1.1.0" profile = "24.2">
     <description>Perform a Reactome analysis</description>
 
     <requirements>
@@ -12,7 +12,7 @@
 
 #if $analysis_type == "genes":
   #if $input_condition.input_source == "text":
-    printf '%s' '$input_condition.input_text' | sed 's/__cn__/\n/g' | sed 's/__pd__/#/g' | sed 's/__tc__/\t/g' > identifiers_file.txt;
+    printf '%s' '$input_condition.input_text' > identifiers_file.txt;
     #set $subcommand_arg = 'identifiers_file.txt'
   #else:
     #set $subcommand_arg = $input_condition.input_file
@@ -83,6 +83,13 @@ reactome
                     <param name="input_source" type="select" label="Choose input type" help="Upload a file or paste its content">
                         <option value="file" selected="true">Upload File</option>
                         <option value="text">Paste Text</option>
+                        <sanitizer>
+                            <valid>
+                                <add value = "\t" />
+                                <add value = "\n" />
+                                <add value = "#" />
+                            </valid>
+                        </sanitizer>
                     </param>
                     <when value="file">
                         <param name="input_file" type="data" format="txt" label="Source File"/>
