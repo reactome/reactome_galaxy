@@ -1,4 +1,4 @@
-<tool id="reactome_gsa" name="Reactome GSA Analysis" version="1.0.0">
+<tool id="reactome_gsa" name="Reactome GSA Analysis" version="1.1.0" profile = "24.2">
     <description>Perform a ReactomeGSA analysis</description>
 
     <requirements>
@@ -15,7 +15,7 @@
 
     <command><![CDATA[
 
-Rscript ${__tool_directory__}/reactome_analysis.R
+Rscript '${__tool_directory__}/reactome_analysis.R'
   --dataset '$dataset'
   --data_type '$data_type'
   --annotation '$annotation'
