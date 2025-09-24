@@ -205,9 +205,9 @@ Rscript '${__tool_directory__}/reactome_analysis.R'
 
     <tests>
         <test>
-            <param name="dataset" value="EXAMPLE_MEL_RNA_expr.tsv"/>
+            <param name="dataset" location="https://zenodo.org/records/17193759/files/EXAMPLE_MEL_RNA_expr.tsv"/>
             <param name="data_type" value="rnaseq_counts"/>
-            <param name="annotation" value="Melanoma RNA-seq example_metadata.csv"/>
+            <param name="annotation" location="https://zenodo.org/records/17193759/files/Melanoma RNA-seq example_metadata.csv"/>
             <param name="analysis_method_selector|analysis_method" value="Camera"/>
             <param name="use_interactors" value="false"/>
             <param name="include_disease_pathways" value="true"/>
