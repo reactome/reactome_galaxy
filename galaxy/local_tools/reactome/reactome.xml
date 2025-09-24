@@ -213,7 +213,7 @@ reactome
         <test expect_num_outputs="1">
             <param name="analysis_type_selector|analysis_type" value="genes"/>
             <param name="analysis_type_selector|input_condition|input_source" value="file"/>
-            <param name="analysis_type_selector|input_condition|input_file" value="location="https://zenodo.org/records/17193867/files/proteins.txt"/>
+            <param name="analysis_type_selector|input_condition|input_file" location="https://zenodo.org/records/17193867/files/proteins.txt"/>
             <output name="pathways">
                 <assert_contents>
                     <has_text text="Pathway identifier"/>
