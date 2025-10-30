@@ -1,4 +1,4 @@
-<tool id="reactome" name="Reactome Analysis" version="1.2.0" profile = "24.2">
+<tool id="reactome" name="Reactome Analysis" version="1.2.1" profile = "24.2">
     <description>Perform a Reactome analysis</description>
 
     <requirements>
@@ -252,9 +252,7 @@ provided as identifiers, one per line. The ideal identifiers to use are UniProt 
 ChEBI IDs for small molecules, and either HGNC gene symbols or ENSEMBL IDs for DNA/RNA molecules,
 as these are our main external reference sources for proteins and small molecules.
 
-To use, select an input type from the dropdown list to upload a file or paste a gene list.
-
-See `here <https://zenodo.org/records/17203734>`_ for sample datasets.
+To use, select an input type from the dropdown list to upload a file or paste a gene list. See `here <https://zenodo.org/records/17203734>`_ for sample datasets.
 
 Sample input:
 ~~~~~~~~~~~~~
